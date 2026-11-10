@@ -48,7 +48,8 @@ export function Sidebar() {
         title={collapsed ? label : undefined}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "group relative flex h-9 w-full items-center gap-3 rounded-xl px-2.5 text-[13.5px] font-medium transition-colors duration-150",
+          "group relative flex h-9 w-full items-center rounded-xl text-[13.5px] font-medium transition-colors duration-150",
+          collapsed ? "justify-center px-0" : "gap-3 px-2.5",
           active ? "text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg",
         )}
       >

@@ -82,9 +82,13 @@ textarea,
   scrollbar-color: rgb(255 255 255 / 0.12) transparent;
 }
 
-:focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
-  outline-offset: 2px;
+/* In the base layer so component utilities (outline-none, rings) can override it.
+   Unlayered rules beat Tailwind's layered utilities. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
+    outline-offset: 2px;
+  }
 }
 
 /* ---------- glass ---------- */
