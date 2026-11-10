@@ -84,6 +84,7 @@ fn apply_secrets(secrets: &dyn SecretStore, id: &str, method: AuthMethod, s: &Se
 
 pub fn create_impl(db: &Database, secrets: &dyn SecretStore, input: &ServerInput, s: &SecretUpdate) -> AppResult<ServerView> {
     let input = validate_server_input(input)?;
+    db.with(|c| servers::check_jump_chain(c, None, input.jump_host_id.as_deref()))?;
     let profile = db.with(|c| servers::insert(c, &input))?;
     if let Err(e) = apply_secrets(secrets, &profile.id, input.auth_method, s) {
         // Don't leave a half-created profile behind.
@@ -97,6 +98,7 @@ pub fn create_impl(db: &Database, secrets: &dyn SecretStore, input: &ServerInput
 
 pub fn update_impl(db: &Database, secrets: &dyn SecretStore, id: &str, input: &ServerInput, s: &SecretUpdate) -> AppResult<ServerView> {
     let input = validate_server_input(input)?;
+    db.with(|c| servers::check_jump_chain(c, Some(id), input.jump_host_id.as_deref()))?;
     let profile = db.with(|c| servers::update(c, id, &input))?;
     apply_secrets(secrets, id, input.auth_method, s)?;
     let _ = db.with(|c| activity::record(c, Some(id), Some(&profile.input.name), ActivityKind::ServerUpdated, "Server profile updated"));

@@ -157,6 +157,7 @@ export function ServerCard({ server, index = 0 }: { server: ServerView; index?: 
   const a = useServerActions(server);
   const sample = useLiveSample(server.id);
   const setPage = useUi((s) => s.setPage);
+  const jump = useServers((s) => (server.jumpHostId ? s.servers.find((x) => x.id === server.jumpHostId) : undefined));
   const kind =PROFILE_KINDS.find((k) => k.value === server.profileKind)?.label;
   const live = state === "connected";
 
@@ -192,6 +193,11 @@ export function ServerCard({ server, index = 0 }: { server: ServerView; index?: 
         </span>
         <span className="text-faint">·</span>
         <span className="truncate text-faint">{server.osDetected ?? kind}</span>
+        {jump && (
+          <span className="ml-auto shrink-0 truncate text-faint" title={`Connects through ${jump.name}`}>
+            via {jump.name}
+          </span>
+        )}
       </div>
 
       {/* Real monitoring data only; "n/a" when not connected or not monitored. */}

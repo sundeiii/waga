@@ -135,7 +135,7 @@ impl H {
             .with(|c| {
                 servers::insert(c, &ServerInput {
                     name: "2fa".into(), host: "127.0.0.1".into(), port, username: "u".into(), auth_method: auth, key_path, profile_kind: ProfileKind::Linux,
-                    group_name: None, tags: vec![], notes: String::new(), favorite: false, auto_reconnect: false, keepalive: false,
+                    group_name: None, tags: vec![], notes: String::new(), favorite: false, auto_reconnect: false, keepalive: false, jump_host_id: None,
                 })
             })
             .unwrap();

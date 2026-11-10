@@ -212,6 +212,7 @@ impl Harness {
             favorite: false,
             auto_reconnect: false,
             keepalive: true,
+            jump_host_id: None,
         };
         self.db.with(|c| servers::insert(c, &input)).unwrap()
     }

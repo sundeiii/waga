@@ -75,6 +75,7 @@ async fn real_openssh_end_to_end() {
                     favorite: false,
                     auto_reconnect: false,
                     keepalive: true,
+                    jump_host_id: None,
                 },
             )
         })

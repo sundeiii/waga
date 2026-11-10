@@ -83,6 +83,32 @@ pub struct ServerInput {
     pub favorite: bool,
     pub auto_reconnect: bool,
     pub keepalive: bool,
+    /// Connect through this saved server first (ProxyJump).
+    #[serde(default)]
+    pub jump_host_id: Option<String>,
+}
+
+pub const MAX_JUMPS: usize = 3;
+
+/// Ensure a jump host exists, isn't the server itself, and doesn't create a loop
+/// or a chain longer than MAX_JUMPS.
+pub fn check_jump_chain(conn: &Connection, self_id: Option<&str>, jump: Option<&str>) -> AppResult<()> {
+    let mut next = jump.map(str::to_string);
+    let mut depth = 0;
+    let mut seen: Vec<String> = self_id.map(|s| vec![s.to_string()]).unwrap_or_default();
+    while let Some(id) = next {
+        if seen.contains(&id) {
+            return Err(AppError::Validation("Jump host chain would loop back to this server".into()));
+        }
+        depth += 1;
+        if depth > MAX_JUMPS {
+            return Err(AppError::Validation(format!("At most {MAX_JUMPS} jump hosts in a chain")));
+        }
+        let p = get(conn, &id).map_err(|_| AppError::Validation("Jump host no longer exists".into()))?;
+        seen.push(id);
+        next = p.input.jump_host_id;
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -98,7 +124,7 @@ pub struct ServerProfile {
 }
 
 const COLUMNS: &str = "id, name, host, port, username, auth_method, key_path, profile_kind, group_name, \
-    tags, notes, favorite, auto_reconnect, keepalive, os_detected, last_connected_at, created_at, updated_at";
+    tags, notes, favorite, auto_reconnect, keepalive, os_detected, last_connected_at, created_at, updated_at, jump_host_id";
 
 fn from_row(r: &Row) -> rusqlite::Result<(ServerProfile, String, String)> {
     // Return raw strings for enum/json columns; parsed by caller to surface typed errors.
@@ -122,6 +148,7 @@ fn from_row(r: &Row) -> rusqlite::Result<(ServerProfile, String, String)> {
                 favorite: r.get(11)?,
                 auto_reconnect: r.get(12)?,
                 keepalive: r.get(13)?,
+                jump_host_id: r.get(18)?,
             },
             os_detected: r.get(14)?,
             last_connected_at: r.get(15)?,
@@ -160,8 +187,8 @@ pub fn insert(conn: &Connection, input: &ServerInput) -> AppResult<ServerProfile
     let ts = now();
     conn.execute(
         "INSERT INTO servers (id, name, host, port, username, auth_method, key_path, profile_kind, group_name, \
-         tags, notes, favorite, auto_reconnect, keepalive, created_at, updated_at) \
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?15)",
+         tags, notes, favorite, auto_reconnect, keepalive, created_at, updated_at, jump_host_id) \
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?15, ?16)",
         params![
             id,
             input.name,
@@ -178,6 +205,7 @@ pub fn insert(conn: &Connection, input: &ServerInput) -> AppResult<ServerProfile
             input.auto_reconnect,
             input.keepalive,
             ts,
+            input.jump_host_id,
         ],
     )?;
     get(conn, &id)
@@ -187,7 +215,7 @@ pub fn update(conn: &Connection, id: &str, input: &ServerInput) -> AppResult<Ser
     let n = conn.execute(
         "UPDATE servers SET name=?2, host=?3, port=?4, username=?5, auth_method=?6, key_path=?7, \
          profile_kind=?8, group_name=?9, tags=?10, notes=?11, favorite=?12, auto_reconnect=?13, \
-         keepalive=?14, updated_at=?15 WHERE id=?1",
+         keepalive=?14, updated_at=?15, jump_host_id=?16 WHERE id=?1",
         params![
             id,
             input.name,
@@ -204,6 +232,7 @@ pub fn update(conn: &Connection, id: &str, input: &ServerInput) -> AppResult<Ser
             input.auto_reconnect,
             input.keepalive,
             now(),
+            input.jump_host_id,
         ],
     )?;
     if n == 0 {
@@ -257,6 +286,7 @@ pub(crate) fn sample_input() -> ServerInput {
         favorite: false,
         auto_reconnect: true,
         keepalive: true,
+        jump_host_id: None,
     }
 }
 
@@ -292,6 +322,38 @@ mod tests {
             delete(c, &created.id)?;
             assert!(matches!(get(c, &created.id), Err(AppError::NotFound(_))));
             assert!(matches!(delete(c, &created.id), Err(AppError::NotFound(_))));
+            Ok(())
+        })
+        .unwrap();
+    }
+
+    #[test]
+    fn jump_chain_rules() {
+        let db = Database::open_in_memory().unwrap();
+        db.with(|c| {
+            let a = insert(c, &sample_input())?;
+            let mut bi = sample_input();
+            bi.jump_host_id = Some(a.id.clone());
+            let b = insert(c, &bi)?;
+            assert_eq!(get(c, &b.id)?.input.jump_host_id.as_deref(), Some(a.id.as_str()));
+
+            assert!(check_jump_chain(c, Some(&b.id), Some(&a.id)).is_ok());
+            assert!(check_jump_chain(c, Some(&a.id), Some(&a.id)).is_err(), "self");
+            assert!(check_jump_chain(c, Some(&a.id), Some(&b.id)).is_err(), "a -> b -> a loop");
+            assert!(check_jump_chain(c, None, Some("missing")).is_err());
+
+            // Chain length limit.
+            let mut prev = b.id.clone();
+            for _ in 0..3 {
+                let mut i = sample_input();
+                i.jump_host_id = Some(prev.clone());
+                prev = insert(c, &i)?.id;
+            }
+            assert!(check_jump_chain(c, None, Some(&prev)).is_err(), "too deep");
+
+            // Deleting the jump host clears the reference (ON DELETE SET NULL).
+            delete(c, &a.id)?;
+            assert_eq!(get(c, &b.id)?.input.jump_host_id, None);
             Ok(())
         })
         .unwrap();

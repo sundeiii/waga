@@ -44,6 +44,7 @@ function blank(defaultPort: number, defaultUser: string): ServerInput {
     favorite: false,
     autoReconnect: false,
     keepalive: true,
+    jumpHostId: null,
   };
 }
 
@@ -53,6 +54,7 @@ export function ServerDialog() {
   const toast = useUi((s) => s.toast);
   const setPage = useUi((s) => s.setPage);
   const { create, update } = useServers();
+  const allServers = useServers((s) => s.servers);
   const conn = useSettings((s) => s.settings?.connections);
 
   const [form, setForm] = useState<ServerInput>(() => blank(22, ""));
@@ -258,8 +260,23 @@ export function ServerDialog() {
           <Input id="sv-tags" value={tagsText} placeholder="web, nginx" onChange={(e) => setTagsText(e.target.value)} />
         </Field>
 
-        <Field label="Jump host" className="col-span-6" hint="ProxyJump support is planned; not implemented yet.">
-          <Input disabled placeholder="Not yet implemented" />
+        <Field
+          label="Jump host"
+          className="col-span-6"
+          htmlFor="sv-jump"
+          hint="Connect through another saved server first (like ProxyJump). Each host's key and login are verified separately."
+        >
+          <Select id="sv-jump" value={form.jumpHostId ?? ""} onChange={(e) => set("jumpHostId", e.target.value || null)}>
+            <option value="">None — connect directly</option>
+            {allServers
+              .filter((s) => s.id !== editing?.id)
+              .map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.username}@{s.host}
+                  {s.port !== 22 ? `:${s.port}` : ""})
+                </option>
+              ))}
+          </Select>
         </Field>
 
         <Field label="Notes" className="col-span-6" htmlFor="sv-notes">

@@ -149,22 +149,59 @@ fn tcp_error(e: &std::io::Error, endpoint: &str) -> Failure {
     Failure::error(msg)
 }
 
-async fn connect_and_run(ctx: &SessionContext, commands: &mut mpsc::Receiver<SessionCommand>) -> Result<String, Failure> {
+impl SessionContext {
+    /// Same session (sink, prompts, timeouts) but for another hop's profile.
+    fn for_hop(&self, profile: ServerProfile) -> SessionContext {
+        SessionContext {
+            sid: self.sid.clone(),
+            profile,
+            cols: self.cols,
+            rows: self.rows,
+            connect_timeout: self.connect_timeout,
+            keepalive: self.keepalive,
+            prompt_timeout: self.prompt_timeout,
+            db: self.db.clone(),
+            secrets: self.secrets.clone(),
+            prompts: self.prompts.clone(),
+            sink: self.sink.clone(),
+            connections: self.connections.clone(),
+        }
+    }
+}
+
+/// The route to the target: [first jump, …, target]. Rejects loops/missing hops.
+pub fn hop_chain(db: &Database, target: &ServerProfile) -> Result<Vec<ServerProfile>, String> {
+    let mut chain = vec![target.clone()];
+    let mut seen = vec![target.id.clone()];
+    let mut next = target.input.jump_host_id.clone();
+    while let Some(id) = next {
+        if seen.contains(&id) {
+            return Err("The jump host chain loops back on itself".into());
+        }
+        if chain.len() > servers::MAX_JUMPS {
+            return Err(format!("At most {} jump hosts are supported", servers::MAX_JUMPS));
+        }
+        let hop = db.with(|c| servers::get(c, &id)).map_err(|_| "The jump host profile no longer exists".to_string())?;
+        seen.push(id);
+        next = hop.input.jump_host_id.clone();
+        chain.insert(0, hop);
+    }
+    Ok(chain)
+}
+
+type Handle = client::Handle<ClientHandler>;
+
+/// SSH handshake (with host key verification) + authentication over any stream.
+async fn handshake_and_auth<S>(ctx: &SessionContext, stream: S) -> Result<Handle, Failure>
+where
+    S: tokio::io::AsyncRead + tokio::io::AsyncWrite + Unpin + Send + 'static,
+{
     let p = &ctx.profile.input;
     let endpoint = ctx.endpoint();
     let host = p.host.trim_start_matches('[').trim_end_matches(']').to_string();
-    ctx.emit(SessionState::Connecting, Some(format!("Connecting to {endpoint}")));
 
-    // 1. TCP (bounded by the connection timeout; includes DNS resolution).
-    let stream = match tokio::time::timeout(ctx.connect_timeout, TcpStream::connect((host.as_str(), p.port))).await {
-        Err(_) => return Err(Failure::new(SessionState::Timeout, format!("Timed out after {}s connecting to {endpoint}", ctx.connect_timeout.as_secs()))),
-        Ok(Err(e)) => return Err(tcp_error(&e, &endpoint)),
-        Ok(Ok(s)) => s,
-    };
-    let _ = stream.set_nodelay(true);
-
-    // 2. SSH handshake. Host key verification happens inside, and may wait
-    //    for the user, so the bound includes the prompt timeout.
+    // Host key verification happens inside the handshake and may wait for the
+    // user, so the bound includes the prompt timeout.
     let config = Arc::new(client::Config {
         inactivity_timeout: None,
         keepalive_interval: ctx.keepalive,
@@ -203,9 +240,55 @@ async fn connect_and_run(ctx: &SessionContext, commands: &mut mpsc::Receiver<Ses
         }
     };
 
-    // 3. Authentication.
     ctx.emit(SessionState::Authenticating, None);
     authenticate(&mut handle, ctx).await?;
+    Ok(handle)
+}
+
+/// Connect to the target, tunnelling through any jump hosts.
+/// Returns the jump handles (kept alive for the session) and the target handle.
+async fn establish(ctx: &SessionContext) -> Result<(Vec<Arc<Handle>>, Handle), Failure> {
+    let chain = hop_chain(&ctx.db, &ctx.profile).map_err(Failure::error)?;
+    let first = ctx.for_hop(chain[0].clone());
+    let fp = &first.profile.input;
+    let first_ep = first.endpoint();
+    let via = if chain.len() > 1 { format!(" (jump host for {})", ctx.profile.input.name) } else { String::new() };
+    ctx.emit(SessionState::Connecting, Some(format!("Connecting to {first_ep}{via}")));
+
+    // TCP to the first hop (bounded by the connection timeout; includes DNS).
+    let host = fp.host.trim_start_matches('[').trim_end_matches(']').to_string();
+    let tcp = match tokio::time::timeout(ctx.connect_timeout, TcpStream::connect((host.as_str(), fp.port))).await {
+        Err(_) => return Err(Failure::new(SessionState::Timeout, format!("Timed out after {}s connecting to {first_ep}", ctx.connect_timeout.as_secs()))),
+        Ok(Err(e)) => return Err(tcp_error(&e, &first_ep)),
+        Ok(Ok(s)) => s,
+    };
+    let _ = tcp.set_nodelay(true);
+    let mut handle = handshake_and_auth(&first, tcp).await?;
+
+    // Each further hop runs a full SSH session inside a direct-tcpip tunnel
+    // through the previous one (like OpenSSH ProxyJump). The jump host only
+    // relays encrypted bytes; the target's host key is verified end-to-end.
+    let mut jumps = Vec::new();
+    for (i, hop) in chain.iter().enumerate().skip(1) {
+        let prev_name = chain[i - 1].input.name.clone();
+        let hctx = ctx.for_hop(hop.clone());
+        let ep = hctx.endpoint();
+        ctx.emit(SessionState::Connecting, Some(format!("Connecting to {ep} via {prev_name}")));
+        let target_host = hop.input.host.trim_start_matches('[').trim_end_matches(']').to_string();
+        let ch = match tokio::time::timeout(ctx.connect_timeout, handle.channel_open_direct_tcpip(target_host, hop.input.port as u32, "127.0.0.1", 0)).await {
+            Err(_) => return Err(Failure::new(SessionState::Timeout, format!("Timed out opening a tunnel from {prev_name} to {ep}"))),
+            Ok(Err(e)) => return Err(Failure::error(format!("Jump host {prev_name} could not reach {ep}: {e}. Is TCP forwarding allowed there?"))),
+            Ok(Ok(ch)) => ch,
+        };
+        jumps.push(Arc::new(handle));
+        handle = handshake_and_auth(&hctx, ch.into_stream()).await?;
+    }
+    Ok((jumps, handle))
+}
+
+async fn connect_and_run(ctx: &SessionContext, commands: &mut mpsc::Receiver<SessionCommand>) -> Result<String, Failure> {
+    let endpoint = ctx.endpoint();
+    let (jumps, handle) = establish(ctx).await?;
     // From here on the handle is shared (read-only) with monitoring etc.
     let handle = Arc::new(handle);
     ctx.connections.insert(&ctx.sid, &ctx.profile.id, handle.clone());
@@ -255,5 +338,9 @@ async fn connect_and_run(ctx: &SessionContext, commands: &mut mpsc::Receiver<Ses
         }
     };
     let _ = handle.disconnect(Disconnect::ByApplication, "", "en").await;
+    // Tear down jump hosts innermost-first.
+    for j in jumps.iter().rev() {
+        let _ = j.disconnect(Disconnect::ByApplication, "", "en").await;
+    }
     Ok(reason)
 }

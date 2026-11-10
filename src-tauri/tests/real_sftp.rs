@@ -60,7 +60,7 @@ async fn real_sftp_roundtrip() {
         .with(|c| {
             servers::insert(c, &ServerInput {
                 name: "real".into(), host: host.clone(), port, username: user.clone(), auth_method: AuthMethod::Key, key_path: Some(key.clone()),
-                profile_kind: ProfileKind::Windows, group_name: None, tags: vec![], notes: String::new(), favorite: false, auto_reconnect: false, keepalive: true,
+                profile_kind: ProfileKind::Windows, group_name: None, tags: vec![], notes: String::new(), favorite: false, auto_reconnect: false, keepalive: true, jump_host_id: None,
             })
         })
         .unwrap();

@@ -17,6 +17,8 @@ export interface ServerInput {
   favorite: boolean;
   autoReconnect: boolean;
   keepalive: boolean;
+  /** Connect through this saved server first (ProxyJump). */
+  jumpHostId: string | null;
 }
 
 export interface ServerView extends ServerInput {
