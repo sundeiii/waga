@@ -1,6 +1,6 @@
 [package]
 name = "yoru"
-version = "0.2.0"
+version = "0.3.0"
 description = "Yoru — SSH & Server Manager"
 authors = ["yoru"]
 edition = "2021"

@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Yoru",
   "mainBinaryName": "yoru",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "identifier": "dev.yoru.app",
   "build": {
     "beforeDevCommand": "npm run dev",
