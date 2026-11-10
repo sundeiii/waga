@@ -486,9 +486,34 @@ export const terminalEngine = {
     entries.get(tabId)?.search.clearDecorations();
   },
 
-  /** Send text as if typed/pasted (used by snippets later). Never adds a newline. */
+  /** Send text as if pasted. Never adds a newline. */
   insert(tabId: string, text: string) {
-    entries.get(tabId)?.term.paste(text);
+    const e = entries.get(tabId);
+    if (!e) return false;
+    e.term.paste(text);
+    e.term.focus();
+    return true;
+  },
+
+  /**
+   * True if pasting `text` cannot execute anything by itself: single-line text,
+   * or the shell has bracketed paste on (bash/zsh/PSReadLine), which treats a
+   * multi-line paste as one edit. Without it (e.g. cmd.exe) each line would run.
+   */
+  pasteIsInert(tabId: string, text: string) {
+    const e = entries.get(tabId);
+    if (!e) return false;
+    return !/[\r\n]/.test(text) || e.term.modes.bracketedPasteMode;
+  },
+
+  /** Paste then press Enter. Callers must have confirmed with the user. */
+  run(tabId: string, text: string) {
+    const e = entries.get(tabId);
+    if (!e?.sessionId || e.state !== "connected") return false;
+    e.term.paste(text);
+    api.sshWrite(e.sessionId, "\r").catch(() => undefined);
+    e.term.focus();
+    return true;
   },
 
   applySettings(s: AppSettings) {

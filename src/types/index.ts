@@ -131,6 +131,26 @@ export interface LocalProfile {
   opacity: number | null;
 }
 
+export const SNIPPET_CATEGORIES = ["linux", "networking", "docker", "git", "diagnostics", "powershell", "security", "custom"] as const;
+export type SnippetCategory = (typeof SNIPPET_CATEGORIES)[number];
+
+export interface SnippetInput {
+  title: string;
+  description: string;
+  command: string;
+  category: SnippetCategory;
+  tags: string[];
+  favorite: boolean;
+}
+
+export interface Snippet extends SnippetInput {
+  id: string;
+  useCount: number;
+  lastUsedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface FileEntry {
   name: string;
   path: string;

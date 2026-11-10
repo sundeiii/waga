@@ -4,6 +4,7 @@ pub mod activity;
 pub mod known_hosts;
 pub mod servers;
 pub mod settings;
+pub mod snippets;
 
 use std::path::Path;
 use std::sync::Mutex;
@@ -14,7 +15,10 @@ use crate::error::{AppError, AppResult};
 
 /// Ordered list of schema migrations. Never edit an applied migration;
 /// append a new one instead.
-const MIGRATIONS: &[(i64, &str)] = &[(1, include_str!("../../migrations/0001_init.sql"))];
+const MIGRATIONS: &[(i64, &str)] = &[
+    (1, include_str!("../../migrations/0001_init.sql")),
+    (2, include_str!("../../migrations/0002_snippets.sql")),
+];
 
 pub struct Database {
     conn: Mutex<Connection>,

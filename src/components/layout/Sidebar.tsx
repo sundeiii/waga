@@ -24,7 +24,7 @@ export const NAV: { id: Page; label: string; icon: typeof Server; soon?: boolean
   { id: "terminal", label: "Terminal", icon: SquareTerminal },
   { id: "sftp", label: "SFTP", icon: FolderTree },
   { id: "monitoring", label: "Monitoring", icon: Gauge },
-  { id: "snippets", label: "Snippets", icon: SquareCode, soon: true },
+  { id: "snippets", label: "Snippets", icon: SquareCode },
   { id: "activity", label: "Activity", icon: Activity },
 ];
 

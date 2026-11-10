@@ -10,6 +10,8 @@ import type {
   ServerInput,
   ServerView,
   SessionEvent,
+  Snippet,
+  SnippetInput,
 } from "@/types";
 
 /** Normalize anything thrown by invoke into a readable message. */
@@ -47,6 +49,14 @@ export const api = {
   clearActivity: () => invoke<void>("clear_activity"),
   listKnownHosts: () => invoke<KnownHost[]>("list_known_hosts"),
   removeKnownHost: (host: string, port: number) => invoke<number>("remove_known_host", { host, port }),
+
+  // snippets
+  listSnippets: () => invoke<Snippet[]>("list_snippets"),
+  createSnippet: (input: SnippetInput) => invoke<Snippet>("create_snippet", { input }),
+  updateSnippet: (id: string, input: SnippetInput) => invoke<Snippet>("update_snippet", { id, input }),
+  deleteSnippet: (id: string) => invoke<void>("delete_snippet", { id }),
+  setSnippetFavorite: (id: string, favorite: boolean) => invoke<void>("set_snippet_favorite", { id, favorite }),
+  markSnippetUsed: (id: string) => invoke<void>("mark_snippet_used", { id }),
 
   // local terminals
   localProfiles: () => invoke<LocalProfile[]>("local_profiles"),

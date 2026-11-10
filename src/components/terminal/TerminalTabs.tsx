@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowDown, ArrowUp, Eraser, Minus, Monitor, Plus, PlugZap, RotateCw, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Eraser, Minus, Monitor, Plus, PlugZap, RotateCw, Search, SquareCode, X } from "lucide-react";
+import { useSnippets } from "@/stores/snippets";
 import { Button } from "@/components/ui/Button";
 import { StatusDot, STATE_META } from "@/components/ui/misc";
 import { terminalEngine } from "@/services/terminalEngine";
@@ -118,6 +119,9 @@ export function TerminalToolbar() {
           <Search />
         </Button>
       )}
+      <Button variant="ghost" size="icon" onClick={() => useSnippets.getState().setPalette(true)} disabled={tab.state !== "connected"} title="Insert snippet (Ctrl+Shift+S)" aria-label="Insert snippet">
+        <SquareCode />
+      </Button>
       <Button variant="ghost" size="icon" onClick={() => font(-1)} title="Smaller font" aria-label="Decrease font size">
         <Minus />
       </Button>

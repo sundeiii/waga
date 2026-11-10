@@ -22,7 +22,8 @@ Tauri 2 (Rust) + React. Dark glassmorphism, lavender accents, real SSH.
 | Monitoring: CPU, memory, disks, network, uptime, load, OS — over the **already-open** SSH connection (no agent, no extra login); Linux via `/proc` + POSIX `df`, Windows via PowerShell/CIM; live charts, pause, interval, history of collected samples only | ✅ |
 | SFTP dual-pane file manager over the open SSH session: browse, breadcrumbs, hidden files, mkdir, rename, delete (local → Recycle Bin), drag-and-drop transfers with progress + cancel, overwrite only after confirmation, atomic `.yoru-partial` writes | ✅ |
 | Local terminals (cmd, Windows PowerShell, PowerShell 7, WSL) from your **Windows Terminal profiles**, incl. their color scheme and font, via ConPTY. Ctrl+Shift+T opens the default profile | ✅ |
-| Jump hosts, folder transfers, snippets, tray, start-with-Windows | ⏳ not yet — shown as such in the UI |
+| Command snippets: categories, search, tags, favorites, starter set of read-only diagnostics; **Insert** (default) never executes — multi-line inserts into shells without bracketed paste ask first; **Run** always confirms showing the exact command and target; quick picker with Ctrl+Shift+S | ✅ |
+| Jump hosts, folder transfers, tray, start-with-Windows | ⏳ not yet |
 
 ## Architecture
 
@@ -162,6 +163,7 @@ wider distribution, sign it with a code-signing certificate
 | --- | --- |
 | Ctrl+K | Focus search |
 | Ctrl+Shift+T | New local terminal (default Windows Terminal profile) |
+| Ctrl+Shift+S | Snippet picker (Enter inserts, Ctrl+Enter runs after confirmation) |
 | Ctrl+N | New server |
 | Ctrl+Shift+Q | Quick connect |
 | Ctrl+B | Toggle sidebar |

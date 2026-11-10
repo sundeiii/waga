@@ -12,7 +12,10 @@ import { Servers } from "@/pages/Servers";
 import { TerminalPage } from "@/pages/Terminal";
 import { ActivityPage } from "@/pages/Activity";
 import { SettingsPage } from "@/pages/Settings";
-import { ComingSoon } from "@/pages/ComingSoon";
+import { SnippetsPage } from "@/pages/Snippets";
+import { SnippetEditor } from "@/components/snippets/SnippetEditor";
+import { SnippetPalette } from "@/components/snippets/SnippetPalette";
+import { useSnippets } from "@/stores/snippets";
 import { MonitoringPage } from "@/pages/Monitoring";
 import { SFTPPage } from "@/pages/SFTP";
 import { initTransferEvents } from "@/stores/transfers";
@@ -45,6 +48,10 @@ function useGlobalShortcuts() {
           setPage("terminal");
           void terminalEngine.openLocal(p);
         }
+      } else if (e.shiftKey && k === "s") {
+        e.preventDefault();
+        e.stopPropagation();
+        useSnippets.getState().setPalette(true);
       } else if (e.shiftKey && k === "q") {
         e.preventDefault();
         e.stopPropagation();
@@ -135,7 +142,7 @@ export default function App() {
                   {page === "servers" && <Servers />}
                   {page === "sftp" && <SFTPPage preferredServer={sftpTarget} />}
                   {page === "monitoring" && <MonitoringPage />}
-                  {page === "snippets" && <ComingSoon which="snippets" />}
+                  {page === "snippets" && <SnippetsPage />}
                   {page === "activity" && <ActivityPage visible />}
                   {page === "settings" && <SettingsPage visible />}
                 </motion.div>
@@ -148,6 +155,8 @@ export default function App() {
       <ServerDialog />
       <QuickConnectDialog />
       <PromptDialogs />
+      <SnippetEditor />
+      <SnippetPalette />
       <ConfirmDialog />
       <Toaster />
     </MotionConfig>

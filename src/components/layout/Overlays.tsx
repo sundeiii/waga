@@ -34,6 +34,7 @@ export function ConfirmDialog() {
       onOpenChange={(o) => !o && cancel()}
       title={confirm.title}
       description={confirm.body}
+      className={confirm.code ? "w-[min(640px,calc(100vw-48px))]" : undefined}
       footer={
         <>
           <Button variant="ghost" onClick={cancel}>
@@ -44,7 +45,11 @@ export function ConfirmDialog() {
           </Button>
         </>
       }
-    />
+    >
+      {confirm.code ? (
+        <pre className="selectable mb-3 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-line bg-black/35 p-3 font-mono text-[12.5px] leading-relaxed text-fg">{confirm.code}</pre>
+      ) : null}
+    </Dialog>
   );
 }
 

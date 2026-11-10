@@ -5,6 +5,7 @@ pub mod local;
 pub mod monitoring;
 pub mod servers;
 pub mod sftp;
+pub mod snippets;
 pub mod settings;
 pub mod ssh;
 pub mod window;

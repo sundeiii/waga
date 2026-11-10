@@ -12,7 +12,7 @@ interface UiStore {
   search: string;
   serverDialog: { open: boolean; editing?: ServerView; prefill?: Partial<ServerInput>; connectAfterSave?: boolean };
   quickConnectOpen: boolean;
-  confirm: { title: string; body: string; confirmLabel: string; danger?: boolean; onConfirm: () => Promise<void> | void; onCancel?: () => void } | null;
+  confirm: { title: string; body: string; code?: string; confirmLabel: string; danger?: boolean; onConfirm: () => Promise<void> | void; onCancel?: () => void } | null;
   toasts: Toast[];
   /** Server to preselect when opening the SFTP page. */
   sftpTarget: string | null;
@@ -25,7 +25,7 @@ interface UiStore {
   askConfirm: (c: NonNullable<UiStore["confirm"]>) => void;
   closeConfirm: () => void;
   /** Resolves true on confirm, false on cancel. */
-  confirmAsync: (c: { title: string; body: string; confirmLabel: string; danger?: boolean }) => Promise<boolean>;
+  confirmAsync: (c: { title: string; body: string; code?: string; confirmLabel: string; danger?: boolean }) => Promise<boolean>;
   toast: (text: string, tone?: Toast["tone"]) => void;
   dismissToast: (id: number) => void;
 }
