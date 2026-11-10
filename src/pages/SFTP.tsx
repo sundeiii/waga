@@ -125,11 +125,10 @@ export function SFTPPage({ preferredServer }: { preferredServer?: string | null 
       toast(p.side === "local" ? "Open a remote folder first" : "Open a local folder first (not the drive list)", "warning");
       return;
     }
-    let skipped = 0;
     for (const path of p.paths) {
       const entry = byPath.get(path);
-      if (entry?.isDir) {
-        skipped++;
+      if (entry?.kind === "symlink") {
+        toast(`${displayName(entry.name)}: symbolic links aren't transferred`, "warning");
         continue;
       }
       const run = (overwrite: boolean) =>
@@ -138,10 +137,13 @@ export function SFTPPage({ preferredServer }: { preferredServer?: string | null 
         await run(false);
       } catch (e) {
         if (errorKind(e) === "exists") {
+          const isDir = !!entry?.isDir;
           const ok = await confirmAsync({
-            title: "Replace existing file?",
-            body: `${errorMessage(e)}. Replace it with the file you're ${p.side === "local" ? "uploading" : "downloading"}? The old file is only replaced after the transfer completes.`,
-            confirmLabel: "Replace",
+            title: isDir ? "Merge into existing folder?" : "Replace existing file?",
+            body: isDir
+              ? `${errorMessage(e)}. Copy into it? Files with the same name inside will be replaced; other files there are kept.`
+              : `${errorMessage(e)}. Replace it with the file you're ${p.side === "local" ? "uploading" : "downloading"}? The old file is only replaced after the transfer completes.`,
+            confirmLabel: isDir ? "Merge" : "Replace",
             danger: true,
           });
           if (ok) {
@@ -156,7 +158,6 @@ export function SFTPPage({ preferredServer }: { preferredServer?: string | null 
         }
       }
     }
-    if (skipped) toast(`${skipped} folder(s) skipped: folder transfers aren't supported yet`, "warning");
   };
 
   const upload = () => remote.listing && transfer({ side: "local", paths: [...local.selected] });
@@ -328,7 +329,7 @@ export function SFTPPage({ preferredServer }: { preferredServer?: string | null 
       </div>
 
       <TransfersPanel />
-      <p className="text-[11px] text-faint">Drag files between panes or use the arrows. Existing files are never replaced without asking; transfers write to a temporary “.yoru-partial” file first.</p>
+      <p className="text-[11px] text-faint">Drag files or folders between panes, or use the arrows. Nothing is replaced without asking; each file is written to a temporary “.yoru-partial” file first. Symbolic links are skipped.</p>
 
       <Dialog
         open={!!nameDialog}

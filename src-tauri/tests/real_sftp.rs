@@ -47,6 +47,110 @@ async fn finish(rx: &mut mpsc::UnboundedReceiver<TransferEvent>, id: &str) -> Tr
     }
 }
 
+/// Connected session + SFTP for the folder/speed test.
+async fn connect_real() -> (Arc<russh_sftp::client::SftpSession>, String, mpsc::Sender<SessionCommand>, tokio::task::JoinHandle<()>) {
+    let host = env("YORU_TEST_HOST", "127.0.0.1");
+    let port: u16 = env("YORU_TEST_PORT", "22").parse().unwrap();
+    let user = env("YORU_TEST_USER", &std::env::var("USERNAME").unwrap_or_default());
+    let key = env("YORU_TEST_KEY", &format!("{}\\.ssh\\yoru_test_ed25519", std::env::var("USERPROFILE").unwrap_or_default()));
+    let db = Arc::new(Database::open_in_memory().unwrap());
+    let profile = db
+        .with(|c| {
+            servers::insert(c, &ServerInput {
+                name: "real".into(), host, port, username: user, auth_method: AuthMethod::Key, key_path: Some(key),
+                profile_kind: ProfileKind::Windows, group_name: None, tags: vec![], notes: String::new(), favorite: false, auto_reconnect: false, keepalive: true, jump_host_id: None,
+            })
+        })
+        .unwrap();
+    let connections = Arc::new(ConnectionRegistry::default());
+    let prompts = Arc::new(PromptRegistry::default());
+    let (etx, mut erx) = mpsc::unbounded_channel();
+    let (cmd_tx, cmd_rx) = mpsc::channel(8);
+    let sid = uuid::Uuid::new_v4().to_string();
+    let task = tokio::spawn(run_session(
+        SessionContext {
+            sid: sid.clone(), profile: profile.clone(), cols: 80, rows: 24, connect_timeout: Duration::from_secs(10), keepalive: None,
+            prompt_timeout: Duration::from_secs(10), db, secrets: Arc::new(MemoryStore::default()), prompts: prompts.clone(),
+            sink: Arc::new(Sink(etx)), connections: connections.clone(),
+        },
+        cmd_rx,
+    ));
+    loop {
+        match tokio::time::timeout(Duration::from_secs(15), erx.recv()).await.unwrap().unwrap() {
+            SessionEvent::HostKeyPrompt { .. } => prompts.answer_host_key(&sid, yoru_lib::security::host_keys::HostKeyAnswer { accept: true, acknowledge_changed: false }).unwrap(),
+            SessionEvent::Status { state: SessionState::Connected, .. } => break,
+            SessionEvent::Status { state, message } if state.is_terminal() => panic!("{state:?} {message:?}"),
+            _ => {}
+        }
+    }
+    let s = SftpPool::default().get(&profile.id, &connections).await.unwrap();
+    (s, profile.id, cmd_tx, task)
+}
+
+#[tokio::test]
+#[ignore]
+async fn real_sftp_folder_roundtrip_and_throughput() {
+    let (s, sid, cmd, task) = connect_real().await;
+    let home = remote::home(&s).await.unwrap();
+    let tm = Arc::new(TransferManager::default());
+    let (ttx, mut trx) = mpsc::unbounded_channel();
+    let sink: Arc<dyn TransferSink> = Arc::new(TSink(ttx));
+
+    // Nested local folder.
+    let src_root = tempfile::tempdir().unwrap();
+    let folder = src_root.path().join(format!("yoru-dir-{}", &uuid::Uuid::new_v4().to_string()[..6]));
+    std::fs::create_dir_all(folder.join("sub/deeper")).unwrap();
+    std::fs::write(folder.join("a.txt"), b"alpha").unwrap();
+    std::fs::write(folder.join("sub/b.bin"), vec![42u8; 300_000]).unwrap();
+    std::fs::write(folder.join("sub/deeper/c.txt"), "ünïcode ✓".as_bytes()).unwrap();
+    let fname = folder.file_name().unwrap().to_string_lossy().into_owned();
+
+    // Upload folder.
+    let plan = plan_upload(&s, &sid, &folder, &home, false).await.unwrap();
+    assert!(plan.is_dir);
+    assert_eq!(plan.files.len(), 3);
+    let id = tm.start(s.clone(), plan, sink.clone());
+    let done = finish(&mut trx, &id).await;
+    assert_eq!(done.state, TransferState::Done, "{:?}", done.error);
+    assert_eq!((done.files_done, done.files_total), (3, 3));
+    // Re-uploading the same folder needs consent.
+    assert!(matches!(plan_upload(&s, &sid, &folder, &home, false).await, Err(AppError::Exists(_))));
+
+    // Download it back and compare every file.
+    let back = tempfile::tempdir().unwrap();
+    let rdir = format!("{home}/{fname}");
+    let id = tm.start(s.clone(), plan_download(&s, &sid, &rdir, back.path(), false).await.unwrap(), sink.clone());
+    assert_eq!(finish(&mut trx, &id).await.state, TransferState::Done);
+    for rel in ["a.txt", "sub/b.bin", "sub/deeper/c.txt"] {
+        assert_eq!(std::fs::read(back.path().join(&fname).join(rel)).unwrap(), std::fs::read(folder.join(rel)).unwrap(), "{rel}");
+    }
+
+    // Throughput over loopback (64 MiB each way).
+    let big = src_root.path().join("speed.bin");
+    std::fs::write(&big, (0..64 * 1024 * 1024u32).map(|i| (i % 251) as u8).collect::<Vec<_>>()).unwrap();
+    let t0 = std::time::Instant::now();
+    let id = tm.start(s.clone(), plan_upload(&s, &sid, &big, &rdir, false).await.unwrap(), sink.clone());
+    assert_eq!(finish(&mut trx, &id).await.state, TransferState::Done);
+    let up = 64.0 / t0.elapsed().as_secs_f64();
+    let dl_dir = tempfile::tempdir().unwrap();
+    let t1 = std::time::Instant::now();
+    let id = tm.start(s.clone(), plan_download(&s, &sid, &format!("{rdir}/speed.bin"), dl_dir.path(), false).await.unwrap(), sink.clone());
+    assert_eq!(finish(&mut trx, &id).await.state, TransferState::Done);
+    let down = 64.0 / t1.elapsed().as_secs_f64();
+    println!("throughput over loopback: upload {up:.0} MiB/s, download {down:.0} MiB/s");
+
+    // Clean up remote tree (files, then dirs deepest-first).
+    for f in ["speed.bin", "a.txt", "sub/b.bin", "sub/deeper/c.txt"] {
+        let _ = s.remove_file(format!("{rdir}/{f}")).await;
+    }
+    for d in ["sub/deeper", "sub", ""] {
+        let _ = s.remove_dir(if d.is_empty() { rdir.clone() } else { format!("{rdir}/{d}") }).await;
+    }
+    assert!(!s.try_exists(rdir.clone()).await.unwrap());
+    cmd.send(SessionCommand::Close).await.unwrap();
+    task.await.unwrap();
+}
+
 #[tokio::test]
 #[ignore]
 async fn real_sftp_roundtrip() {

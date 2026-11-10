@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Folder, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/misc";
 import { Meter } from "@/components/monitoring/Charts";
@@ -32,7 +32,15 @@ export function TransfersPanel() {
             <div key={t.id} className="grid grid-cols-[18px_1fr_190px_28px] items-center gap-3 border-b border-line px-3 py-2 text-[12px] last:border-0">
               {t.direction === "upload" ? <ArrowUp className="size-4 text-accent" aria-label="Upload" /> : <ArrowDown className="size-4 text-accent" aria-label="Download" />}
               <div className="min-w-0">
-                <div className="truncate">{displayName(t.name)}</div>
+                <div className="flex items-center gap-1.5 truncate">
+                  {t.isDir && <Folder className="size-3.5 shrink-0 text-accent" aria-label="Folder" />}
+                  <span className="truncate">{displayName(t.name)}</span>
+                  {t.isDir && (
+                    <span className="shrink-0 text-[11px] tabular-nums text-faint">
+                      {t.filesDone}/{t.filesTotal} files{t.skipped ? ` · ${t.skipped} links skipped` : ""}
+                    </span>
+                  )}
+                </div>
                 <div className="truncate font-mono text-[10.5px] text-faint" title={t.dest}>
                   → {t.dest}
                 </div>

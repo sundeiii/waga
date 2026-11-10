@@ -190,6 +190,11 @@ export interface TransferEvent {
   total: number | null;
   state: "running" | "done" | "failed" | "cancelled";
   error: string | null;
+  isDir: boolean;
+  filesDone: number;
+  filesTotal: number;
+  /** Symlinks/special files skipped in a folder transfer. */
+  skipped: number;
 }
 
 export interface DiskUsage {

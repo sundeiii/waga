@@ -52,7 +52,11 @@ impl SftpPool {
         }
         let ch = handle.channel_open_session().await.map_err(|e| AppError::Ssh(format!("Cannot open SFTP channel: {e}")))?;
         ch.request_subsystem(true, "sftp").await.map_err(|e| AppError::Ssh(format!("Server refused SFTP: {e}")))?;
-        let sftp = SftpSession::new(ch.into_stream())
+        // More requests in flight = better throughput on high-latency links
+        // (VPN, remote datacenters). Measured on loopback (debug build):
+        // ~110 MiB/s up, ~72 MiB/s down with the defaults.
+        let cfg = russh_sftp::client::Config { max_concurrent_reads: 32, max_concurrent_writes: 32, ..Default::default() };
+        let sftp = SftpSession::new_with_config(ch.into_stream(), cfg)
             .await
             .map_err(|e| AppError::Ssh(format!("SFTP is not available on this server: {e}")))?;
         sftp.set_timeout(30);
