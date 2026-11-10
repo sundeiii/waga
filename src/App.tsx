@@ -23,6 +23,7 @@ import { initMonitoringEvents } from "@/stores/monitoring";
 import { useLocalProfiles } from "@/stores/localProfiles";
 import { terminalEngine } from "@/services/terminalEngine";
 import { api } from "@/services/api";
+import { listen } from "@tauri-apps/api/event";
 import { useSettings } from "@/stores/settings";
 import { useServers } from "@/stores/servers";
 import { useUi } from "@/stores/ui";
@@ -97,9 +98,20 @@ export default function App() {
     }
     initMonitoringEvents();
     initTransferEvents();
+    // Tray menu → "New local terminal".
+    const unlisten = listen("tray://new-local", () => {
+      const p = useLocalProfiles.getState().defaultProfile();
+      if (p) {
+        useUi.getState().setPage("terminal");
+        void terminalEngine.openLocal(p);
+      }
+    });
     void useLocalProfiles.getState().load();
     void loadSettings();
     void refreshServers();
+    return () => {
+      void unlisten.then((f) => f());
+    };
   }, [loadSettings, refreshServers]);
 
   if (!settings) {

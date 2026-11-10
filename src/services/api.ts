@@ -30,7 +30,11 @@ export const api = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   updateSettings: (settings: AppSettings) => invoke<AppSettings>("update_settings", { settings }),
   resetSettings: () => invoke<AppSettings>("reset_settings"),
-  setWindowMaterial: (material: AppSettings["appearance"]["windowMaterial"]) => invoke<void>("set_window_material", { material }),
+  setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
+  autostartEnabled: () => invoke<boolean>("autostart_enabled"),
+  /** Native notification (backend honours the user's setting). */
+  notify: (title: string, body: string) => invoke<void>("notify", { title, body }).catch(() => undefined),
+  setWindowMaterial:(material: AppSettings["appearance"]["windowMaterial"]) => invoke<void>("set_window_material", { material }),
 
   // servers
   listServers: () => invoke<ServerView[]>("list_servers"),

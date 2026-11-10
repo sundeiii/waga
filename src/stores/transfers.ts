@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { listen } from "@tauri-apps/api/event";
+import { api } from "@/services/api";
 import type { TransferEvent } from "@/types";
 
 interface TransfersStore {
@@ -42,5 +43,12 @@ export function initTransferEvents() {
       };
     });
     for (const l of listeners) l(payload);
+    if ((payload.state === "done" || payload.state === "failed") && !document.hasFocus()) {
+      const verb = payload.direction === "upload" ? "Upload" : "Download";
+      void api.notify(
+        payload.state === "done" ? `${verb} finished` : `${verb} failed`,
+        payload.state === "done" ? payload.name : `${payload.name}: ${payload.error ?? "unknown error"}`,
+      );
+    }
   });
 }

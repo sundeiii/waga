@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Fingerprint, KeyRound, Monitor, Palette, Plug, RotateCcw, Shield, SquareTerminal, Trash2 } from "lucide-react";
+import { AppWindow, Fingerprint, KeyRound, Monitor, Palette, Plug, RotateCcw, Shield, SquareTerminal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Input";
 import { Switch } from "@/components/ui/Switch";
@@ -218,6 +218,32 @@ export function SettingsPage({ visible }: { visible: boolean }) {
         </Row>
         <Row label="Polling interval">
           <NumberInput value={settings.monitoring.intervalSecs} min={1} max={300} onCommit={(n) => set("monitoring", { intervalSecs: n })} suffix="s" />
+        </Row>
+      </Section>
+
+      <Section icon={AppWindow} title="Desktop">
+        <Row label="Close to tray" hint="The close button hides yoru; sessions stay connected. Quit from the tray menu.">
+          <Switch checked={settings.system.closeToTray} onCheckedChange={(v) => set("system", { closeToTray: v })} label="Close to tray" />
+        </Row>
+        <Row label="Start with Windows">
+          <Switch
+            checked={settings.system.startWithWindows}
+            label="Start with Windows"
+            onCheckedChange={async (v) => {
+              try {
+                await api.setAutostart(v);
+                set("system", { startWithWindows: v });
+              } catch (e) {
+                toast(errorMessage(e), "danger");
+              }
+            }}
+          />
+        </Row>
+        <Row label="Start minimized to tray" hint="Only when started with Windows">
+          <Switch checked={settings.system.startMinimized} disabled={!settings.system.startWithWindows} onCheckedChange={(v) => set("system", { startMinimized: v })} label="Start minimized" />
+        </Row>
+        <Row label="Notifications" hint="Dropped connections and finished transfers while yoru is in the background">
+          <Switch checked={settings.system.notifications} onCheckedChange={(v) => set("system", { notifications: v })} label="Notifications" />
         </Row>
       </Section>
 

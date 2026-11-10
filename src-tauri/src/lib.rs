@@ -3,6 +3,7 @@
 pub mod commands;
 pub mod credentials;
 pub mod database;
+pub mod desktop;
 pub mod error;
 pub mod local_term;
 pub mod monitoring;
@@ -21,7 +22,12 @@ use crate::state::AppState;
 
 pub fn run() {
     tauri::Builder::default()
+        // Must be first: a second launch just focuses the running window.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| desktop::show_main(app)))
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec![desktop::MINIMIZED_ARG])))
+        .on_window_event(desktop::on_window_event)
         .setup(|app| {
             let dir = app.path().app_data_dir()?;
             std::fs::create_dir_all(&dir)?;
@@ -34,6 +40,12 @@ pub fn run() {
                 }
             }
             app.manage(AppState::new(db, Arc::new(KeyringStore)));
+            desktop::setup_tray(app.handle())?;
+            // The window starts hidden (tauri.conf "visible": false) to avoid a
+            // flash; show it unless we were started with Windows into the tray.
+            if !desktop::started_minimized(app.handle()) {
+                desktop::show_main(app.handle());
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -62,6 +74,9 @@ pub fn run() {
             commands::ssh::ssh_provide_answers,
             commands::ssh::ssh_active_count,
             commands::window::set_window_material,
+            desktop::set_autostart,
+            desktop::autostart_enabled,
+            desktop::notify,
             commands::snippets::list_snippets,
             commands::snippets::create_snippet,
             commands::snippets::update_snippet,

@@ -21,6 +21,7 @@
         "minHeight": 620,
         "center": true,
         "resizable": true,
+        "visible": false,
         "theme": "Dark",
         "transparent": true,
         "dragDropEnabled": false

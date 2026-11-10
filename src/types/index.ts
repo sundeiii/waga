@@ -69,6 +69,12 @@ export interface AppSettings {
     enabled: boolean;
     intervalSecs: number;
   };
+  system: {
+    closeToTray: boolean;
+    startWithWindows: boolean;
+    startMinimized: boolean;
+    notifications: boolean;
+  };
 }
 
 export type SessionState =

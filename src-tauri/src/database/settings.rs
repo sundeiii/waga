@@ -96,6 +96,24 @@ impl Default for MonitoringSettings {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct SystemSettings {
+    /// Closing the window hides it to the tray instead of quitting.
+    pub close_to_tray: bool,
+    pub start_with_windows: bool,
+    /// When started with Windows, stay in the tray.
+    pub start_minimized: bool,
+    /// Notify about dropped connections / finished transfers while in the background.
+    pub notifications: bool,
+}
+
+impl Default for SystemSettings {
+    fn default() -> Self {
+        Self { close_to_tray: false, start_with_windows: false, start_minimized: true, notifications: true }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct AppSettings {
@@ -103,6 +121,7 @@ pub struct AppSettings {
     pub terminal: TerminalSettings,
     pub connections: ConnectionSettings,
     pub monitoring: MonitoringSettings,
+    pub system: SystemSettings,
 }
 
 impl AppSettings {

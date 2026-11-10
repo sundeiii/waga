@@ -374,6 +374,10 @@ export const terminalEngine = {
         }
         if (TERMINAL_FAILURES.includes(ev.state)) {
           sessions.clearPrompts(tabId);
+          // Unexpected drop of an SSH session while yoru is in the background.
+          if (e.target.kind === "ssh" && e.everConnected && !e.userClosed && !document.hasFocus()) {
+            void api.notify(`${e.target.server.name} disconnected`, ev.message ?? "The SSH session ended.");
+          }
           if (ev.message) note(e, ev.message, ev.state === "disconnected" ? "dim" : ev.state === "hostKeyMismatch" ? "err" : "warn");
           this.maybeAutoReconnect(e, ev.state);
         }
