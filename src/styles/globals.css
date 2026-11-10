@@ -1,0 +1,239 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@xterm/xterm/css/xterm.css";
+
+/* ---------- yoru design tokens ---------- */
+@theme {
+  --font-sans: "Inter Variable", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "Cascadia Code", Consolas, monospace;
+
+  --color-bg: #0b0d12;
+  --color-surface: #12151d;
+  --color-elevated: #191d27;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+  --color-fg: #f4f5f7;
+  --color-muted: #9ba3b4;
+  --color-faint: #6b7285;
+  --color-accent: var(--accent);
+  --color-accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
+  --color-success: #49c99a;
+  --color-warning: #f2b76b;
+  --color-danger: #f17c87;
+
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  --accent: #a99cf6;
+  --glass-alpha: 0.72;
+  --glass-blur: 18px;
+  --app-tint: 1;
+  color-scheme: dark;
+}
+
+/* Dark tint over the native backdrop: lower = more see-through. */
+.app-tint {
+  position: fixed;
+  inset: 0;
+  background: rgb(11 13 18 / var(--app-tint));
+  transition: background-color 200ms;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  /* The window is translucent; Windows draws Acrylic/Mica behind the webview. */
+  background: transparent;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+input,
+textarea,
+.selectable {
+  user-select: text;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.12) transparent;
+}
+
+:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* ---------- glass ---------- */
+@utility glass {
+  background: rgb(18 21 29 / var(--glass-alpha));
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--color-line);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.04) inset,
+    0 12px 40px -12px rgb(0 0 0 / 0.55);
+}
+
+@utility glass-elevated {
+  background: rgb(25 29 39 / calc(var(--glass-alpha) + 0.12));
+  backdrop-filter: blur(calc(var(--glass-blur) + 6px)) saturate(150%);
+  border: 1px solid var(--color-line-strong);
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.06) inset,
+    0 24px 64px -16px rgb(0 0 0 / 0.7);
+}
+
+/* ---------- ambient background ---------- */
+.ambient {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.ambient .orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.32;
+  animation: drift 38s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.ambient .orb.a {
+  width: 46vw;
+  height: 46vw;
+  left: -10vw;
+  top: -14vw;
+  background: radial-gradient(circle, var(--accent), transparent 65%);
+}
+.ambient .orb.b {
+  width: 38vw;
+  height: 38vw;
+  right: -8vw;
+  bottom: -14vw;
+  background: radial-gradient(circle, #5b6ee1, transparent 65%);
+  animation-duration: 46s;
+  animation-delay: -12s;
+  opacity: 0.22;
+}
+.ambient .orb.c {
+  width: 26vw;
+  height: 26vw;
+  left: 45vw;
+  top: 30vh;
+  background: radial-gradient(circle, #3fb6a8, transparent 65%);
+  animation-duration: 54s;
+  animation-delay: -20s;
+  opacity: 0.1;
+}
+.ambient .grain {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgb(255 255 255 / 0.025) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6vw, 4vh, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-4vw, 8vh, 0) scale(0.96);
+  }
+}
+
+/* Pause all decorative animation when hidden or when motion is reduced. */
+.app-paused .ambient .orb,
+.reduce-motion .ambient .orb {
+  animation-play-state: paused;
+}
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient .orb {
+    animation: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* Centering is done by Tailwind's `translate` property on the element;
+   animate only `transform` here so the two don't stack. */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Status dot pulse */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.6s var(--ease-out-soft) infinite;
+}
+
+/* ---------- xterm ---------- */
+.xterm {
+  padding: 10px 4px 6px 12px;
+  height: 100%;
+}
+.xterm-host {
+  /* Matches the terminal panel's rounded bottom corners. */
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+  overflow: hidden;
+}
+.xterm .xterm-viewport {
+  background-color: transparent !important;
+}
+.xterm-host {
+  user-select: text;
+}
