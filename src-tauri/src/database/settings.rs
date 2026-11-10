@@ -110,11 +110,13 @@ pub struct SystemSettings {
     pub start_minimized: bool,
     /// Notify about dropped connections / finished transfers while in the background.
     pub notifications: bool,
+    /// Check GitHub Releases for a newer version at startup (at most daily).
+    pub check_updates: bool,
 }
 
 impl Default for SystemSettings {
     fn default() -> Self {
-        Self { close_to_tray: false, start_with_windows: false, start_minimized: true, notifications: true }
+        Self { close_to_tray: false, start_with_windows: false, start_minimized: true, notifications: true, check_updates: true }
     }
 }
 

@@ -4,4 +4,6 @@ src-tauri/target/
 src-tauri/gen/
 *.log
 *.tsbuildinfo
+release/
+*.key
 .DS_Store

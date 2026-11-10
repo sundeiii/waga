@@ -28,12 +28,17 @@
     ],
     "security": {
       "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src ipc: http://ipc.localhost",
-      "capabilities": ["main"]
+      "capabilities": [
+        "main"
+      ]
     }
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "msi"],
+    "targets": [
+      "nsis",
+      "msi"
+    ],
     "publisher": "yoru",
     "copyright": "yoru",
     "category": "DeveloperTool",
@@ -48,6 +53,18 @@
     "windows": {
       "nsis": {
         "installMode": "currentUser"
+      }
+    },
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERBODczREVFQUE2RUY1MEYKUldRUDlXNnE3ajJIMm1lTnc4SW5NS0w5WUhOUlNZM3JFRTlQS2ljaWRkelRKMGhMd2hEOGp4blgK",
+      "endpoints": [
+        "https://github.com/sundeiii/waga/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
       }
     }
   }

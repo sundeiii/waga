@@ -16,6 +16,7 @@ import type {
   SessionEvent,
   Snippet,
   SnippetInput,
+  UpdateInfo,
 } from "@/types";
 
 /** Normalize anything thrown by invoke into a readable message. */
@@ -36,7 +37,10 @@ export const api = {
   resetSettings: () => invoke<AppSettings>("reset_settings"),
   exportSettings: (path: string) => invoke<void>("export_settings", { path }),
   deleteAllData: () => invoke<void>("delete_all_data"),
-  setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
+  appVersion: () => invoke<string>("app_version"),
+  checkForUpdate: () => invoke<UpdateInfo | null>("check_for_update"),
+  installUpdate: () => invoke<void>("install_update"),
+  setAutostart:(enabled: boolean) => invoke<void>("set_autostart", { enabled }),
   autostartEnabled: () => invoke<boolean>("autostart_enabled"),
   /** Native notification (backend honours the user's setting). */
   notify: (title: string, body: string) => invoke<void>("notify", { title, body }).catch(() => undefined),

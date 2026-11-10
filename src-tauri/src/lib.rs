@@ -11,6 +11,7 @@ pub mod security;
 pub mod sftp;
 pub mod ssh;
 pub mod state;
+pub mod updates;
 
 use std::sync::Arc;
 
@@ -26,6 +27,8 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| desktop::show_main(app)))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
+        .manage(updates::PendingUpdate::default())
         .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec![desktop::MINIMIZED_ARG])))
         .on_window_event(desktop::on_window_event)
         .setup(|app| {
@@ -85,6 +88,9 @@ pub fn run() {
             commands::forwards::start_forward,
             commands::forwards::stop_forward,
             commands::forwards::list_active_forwards,
+            updates::app_version,
+            updates::check_for_update,
+            updates::install_update,
             desktop::set_autostart,
             desktop::autostart_enabled,
             desktop::notify,

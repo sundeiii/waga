@@ -77,7 +77,15 @@ export interface AppSettings {
     startWithWindows: boolean;
     startMinimized: boolean;
     notifications: boolean;
+    checkUpdates: boolean;
   };
+}
+
+export interface UpdateInfo {
+  currentVersion: string;
+  version: string;
+  notes: string | null;
+  date: string | null;
 }
 
 export type SessionState =

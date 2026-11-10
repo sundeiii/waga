@@ -1,5 +1,7 @@
 import { motion } from "motion/react";
+import { useUpdates } from "@/stores/updates";
 import {
+  ArrowUpCircle,
   Activity,
   ChevronsLeft,
   ChevronsRight,
@@ -37,6 +39,7 @@ export function Sidebar() {
   const connected = tabs.filter((t) => t.state === "connected").length;
   const pending = tabs.filter((t) => ["connecting", "authenticating", "awaitingHostKey", "awaitingSecret", "reconnecting"].includes(t.state)).length;
 
+  const updateVersion = useUpdates((s) => s.available?.version);
   const toggle = () => update((s) => ({ ...s, appearance: { ...s.appearance, sidebarCollapsed: !collapsed } }));
 
   const item = (id: Page, label: string, Icon: typeof Server, soon?: boolean, badge?: number) => {
@@ -105,6 +108,20 @@ export function Sidebar() {
             <div className="mt-1 pl-3.5 text-faint">Local only · no cloud sync</div>
           </div>
         ) : null}
+        {updateVersion && (
+          <button
+            onClick={() => setPage("settings")}
+            title={`yoru ${updateVersion} is available`}
+            aria-label={`Update available: yoru ${updateVersion}`}
+            className={cn(
+              "flex h-8 items-center gap-2 rounded-xl border border-accent/30 bg-accent-soft text-[12.5px] text-fg transition-colors hover:border-accent/60",
+              collapsed ? "justify-center" : "px-2.5",
+            )}
+          >
+            <ArrowUpCircle className="size-4 shrink-0 text-accent" />
+            {!collapsed && <span className="truncate">Update {updateVersion}</span>}
+          </button>
+        )}
         {item("settings", "Settings", Settings)}
         <button
           onClick={toggle}
