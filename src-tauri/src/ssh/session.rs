@@ -202,10 +202,26 @@ where
 
     // Host key verification happens inside the handshake and may wait for the
     // user, so the bound includes the prompt timeout.
+    // Only ask servers for host certificates once the user trusts a CA;
+    // otherwise behave exactly like a plain-key client.
+    let has_cas = ctx.db.with(crate::database::host_cas::list).map(|l| !l.is_empty()).unwrap_or(false);
+    let mut preferred = russh::Preferred::default();
+    if has_cas {
+        use russh::keys::{Algorithm, EcdsaCurve, HashAlg};
+        preferred.host_key_certificates = std::borrow::Cow::Owned(vec![
+            Algorithm::Ed25519,
+            Algorithm::Ecdsa { curve: EcdsaCurve::NistP256 },
+            Algorithm::Ecdsa { curve: EcdsaCurve::NistP384 },
+            Algorithm::Ecdsa { curve: EcdsaCurve::NistP521 },
+            Algorithm::Rsa { hash: Some(HashAlg::Sha512) },
+            Algorithm::Rsa { hash: Some(HashAlg::Sha256) },
+        ]);
+    }
     let config = Arc::new(client::Config {
         inactivity_timeout: None,
         keepalive_interval: ctx.keepalive,
         keepalive_max: 3,
+        preferred,
         ..Default::default()
     });
     let verdict = Arc::new(Mutex::new(None));

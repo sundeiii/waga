@@ -5,6 +5,7 @@ import type {
   AppSettings,
   ForwardInput,
   ForwardStatus,
+  HostCa,
   KnownHost,
   Listing,
   SavedForward,
@@ -57,7 +58,10 @@ export const api = {
   listActivity: (limit?: number) => invoke<ActivityEntry[]>("list_activity", { limit }),
   clearActivity: () => invoke<void>("clear_activity"),
   listKnownHosts: () => invoke<KnownHost[]>("list_known_hosts"),
-  removeKnownHost: (host: string, port: number) => invoke<number>("remove_known_host", { host, port }),
+  listHostCas: () => invoke<HostCa[]>("list_host_cas"),
+  addHostCa: (pattern: string, publicKey: string, comment: string) => invoke<HostCa>("add_host_ca", { pattern, publicKey, comment }),
+  removeHostCa: (id: string) => invoke<void>("remove_host_ca", { id }),
+  removeKnownHost:(host: string, port: number) => invoke<number>("remove_known_host", { host, port }),
 
   // port forwarding
   listSavedForwards: (serverId: string) => invoke<SavedForward[]>("list_saved_forwards", { serverId }),

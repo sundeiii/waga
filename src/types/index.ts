@@ -258,6 +258,15 @@ export interface MonitorStatus {
   ts: string;
 }
 
+export interface HostCa {
+  id: string;
+  pattern: string;
+  publicKey: string;
+  fingerprint: string;
+  comment: string;
+  addedAt: string;
+}
+
 export interface AppError {
   kind: string;
   message: string;

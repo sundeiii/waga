@@ -13,6 +13,7 @@ import { formatTimestamp } from "@/lib/utils";
 import type { AppSettings, KnownHost } from "@/types";
 
 import { ACCENTS } from "@/lib/theme";
+import { HostCaSection } from "@/components/settings/HostCaSection";
 import { save as saveFile } from "@tauri-apps/plugin-dialog";
 
 function Section({ icon: Icon, title, children }: { icon: typeof Palette; title: string; children: ReactNode }) {
@@ -294,6 +295,7 @@ export function SettingsPage({ visible }: { visible: boolean }) {
             </div>
           ))
         )}
+        <HostCaSection />
       </Section>
 
       <Section icon={Shield} title="Privacy & data">

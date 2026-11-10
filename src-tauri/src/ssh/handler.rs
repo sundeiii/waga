@@ -9,7 +9,8 @@ use russh::keys::{HashAlg, PublicKey, PublicKeyOrCertificate};
 use super::events::{PreviousKey, SessionEvent, SessionSink, SessionState};
 use super::prompts::PromptRegistry;
 use crate::database::activity::{self, ActivityKind};
-use crate::database::{known_hosts, Database};
+use crate::database::{host_cas, known_hosts, Database};
+use crate::security::host_certs::{self, CertVerdict};
 use crate::security::host_keys::{canonical_key, decide, evaluate, HostKeyStatus, PresentedKey, TrustAction};
 
 /// Why the handshake was aborted by us (as opposed to a network error).
@@ -124,11 +125,37 @@ impl ClientHandler {
     }
 }
 
+impl ClientHandler {
+    /// Host certificate check against trusted CAs. Some(result) when decided,
+    /// None to continue with the plain key flow.
+    fn verify_certificate(&self, cert: &russh::keys::Certificate) -> Option<bool> {
+        let cas = self.db.with(host_cas::list).unwrap_or_default();
+        let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+        match host_certs::check(cert, &self.host, &cas, now) {
+            CertVerdict::Trusted { ca_fingerprint } => {
+                self.log(ActivityKind::HostKeyTrusted, &format!("Host certificate for {}:{} accepted (signed by CA {ca_fingerprint})", self.host, self.port));
+                Some(true)
+            }
+            CertVerdict::Invalid(msg) => {
+                self.log(ActivityKind::HostKeyRejected, &msg);
+                self.set_verdict(HostKeyVerdict::Error(format!("Connection blocked: {msg}")));
+                Some(false)
+            }
+            CertVerdict::UnknownCa => None,
+        }
+    }
+}
+
 impl client::Handler for ClientHandler {
     type Error = russh::Error;
 
     async fn check_server_key(&mut self, server_public_key: &PublicKeyOrCertificate) -> Result<bool, Self::Error> {
-        // Certificates are verified as plain keys (CA trust is not implemented yet).
+        if let Some(cert) = server_public_key.certificate() {
+            if let Some(decided) = self.verify_certificate(cert) {
+                return Ok(decided);
+            }
+        }
+        // Plain key (or certificate from an untrusted CA): fingerprint check.
         Ok(self.verify(server_public_key.public_key()).await)
     }
 }
