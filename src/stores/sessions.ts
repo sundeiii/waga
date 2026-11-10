@@ -35,6 +35,15 @@ export type Prompt =
       kind: "password" | "passphrase";
       prompt: string;
       attempt: number;
+    }
+  | {
+      type: "interactive";
+      tabId: string;
+      sessionId: string;
+      name: string;
+      instructions: string;
+      prompts: { prompt: string; echo: boolean }[];
+      round: number;
     };
 
 interface SessionsStore {

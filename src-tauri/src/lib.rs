@@ -59,6 +59,7 @@ pub fn run() {
             commands::ssh::ssh_close,
             commands::ssh::ssh_host_key_decision,
             commands::ssh::ssh_provide_secret,
+            commands::ssh::ssh_provide_answers,
             commands::ssh::ssh_active_count,
             commands::window::set_window_material,
             commands::snippets::list_snippets,

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { KeyRound, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { KeyRound, ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -17,7 +18,79 @@ export function PromptDialogs() {
     if (prompt) terminalEngine.activate(prompt.tabId);
   }, [prompt]);
   if (!prompt) return null;
-  return prompt.type === "hostKey" ? <HostKeyDialog key={prompt.sessionId} p={prompt} /> : <SecretDialog key={prompt.sessionId + prompt.attempt} p={prompt} />;
+  if (prompt.type === "hostKey") return <HostKeyDialog key={prompt.sessionId} p={prompt} />;
+  if (prompt.type === "interactive") return <InteractiveDialog key={prompt.sessionId + prompt.round} p={prompt} />;
+  return <SecretDialog key={prompt.sessionId + prompt.attempt} p={prompt} />;
+}
+
+/** Keyboard-interactive round: the server's own questions (2FA code, PAM). Answers are never stored. */
+function InteractiveDialog({ p }: { p: Extract<Prompt, { type: "interactive" }> }) {
+  const clear = useSessions((s) => s.clearPrompts);
+  const [values, setValues] = useState<string[]>(() => p.prompts.map(() => ""));
+  const server = useServers((s) => s.servers.find((x) => x.id === useSessions.getState().tabs.find((t) => t.id === p.tabId)?.serverId));
+
+  const send = async (answers: string[] | null) => {
+    try {
+      await api.sshProvideAnswers(p.sessionId, answers);
+    } finally {
+      setValues((v) => v.map(() => ""));
+      clear(p.tabId);
+    }
+  };
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(o) => !o && void send(null)}
+      icon={
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent">
+          <ShieldCheck className="size-5" />
+        </div>
+      }
+      title={p.name || "Verification required"}
+      description={
+        <>
+          <span className="text-fg">{server?.name ?? "The server"}</span> is asking for more information.
+          {p.instructions && <span className="mt-1.5 block whitespace-pre-wrap">{p.instructions}</span>}
+        </>
+      }
+      footer={
+        <>
+          <Button variant="ghost" onClick={() => void send(null)}>
+            Cancel
+          </Button>
+          <Button variant="primary" disabled={values.some((v) => !v)} onClick={() => void send(values)}>
+            Continue
+          </Button>
+        </>
+      }
+    >
+      <form
+        className="space-y-3 pb-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!values.some((v) => !v)) void send(values);
+        }}
+      >
+        {p.prompts.map((q, i) => (
+          <label key={i} className="block">
+            <span className="mb-1.5 block text-[12px] font-medium text-muted">{q.prompt.replace(/:\s*$/, "") || "Response"}</span>
+            <Input
+              autoFocus={i === 0}
+              type={q.echo ? "text" : "password"}
+              inputMode={/code|otp|token|pin/i.test(q.prompt) ? "numeric" : undefined}
+              autoComplete={/code|otp|token/i.test(q.prompt) ? "one-time-code" : "off"}
+              value={values[i]}
+              onChange={(e) => setValues((v) => v.map((x, j) => (j === i ? e.target.value : x)))}
+              className={cn(q.echo && "font-mono tracking-wider")}
+            />
+          </label>
+        ))}
+        <p className="text-[11.5px] text-faint">These answers are sent once and never saved.</p>
+        <button type="submit" hidden />
+      </form>
+    </Dialog>
+  );
 }
 
 function HostKeyDialog({ p }: { p: Extract<Prompt, { type: "hostKey" }> }) {

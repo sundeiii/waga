@@ -4,13 +4,14 @@
 
 use std::sync::Arc;
 
-use russh::client;
+use russh::client::{self, AuthResult, KeyboardInteractiveAuthResponse};
 use russh::keys::agent::client::AgentClient;
+use russh::MethodKind;
 use russh::keys::{self, Algorithm, PrivateKeyWithHashAlg};
 use tokio::io::{AsyncRead, AsyncWrite};
 use zeroize::Zeroizing;
 
-use super::events::{SecretKind, SessionEvent, SessionState};
+use super::events::{InteractiveQuestion, SecretKind, SessionEvent, SessionState};
 use super::handler::ClientHandler;
 use super::prompts::SecretAnswer;
 use super::session::{Failure, SessionContext};
@@ -49,6 +50,90 @@ pub async fn authenticate(handle: &mut Handle, ctx: &SessionContext) -> Result<(
     }
 }
 
+// ---------------------------------------------------------------- keyboard-interactive (2FA)
+
+const MAX_KBD_ROUNDS: u32 = 10;
+
+/// Server text is untrusted: strip control characters and cap length.
+fn clean(s: &str, max: usize) -> String {
+    s.chars().filter(|c| !c.is_control() || *c == '\n').take(max).collect::<String>().trim().to_string()
+}
+
+fn looks_like_password_prompt(p: &str, echo: bool) -> bool {
+    let p = p.to_lowercase();
+    !echo && p.contains("password") && !p.contains("new") && !p.contains("code") && !p.contains("otp")
+}
+
+/// Does this failed result mean "now do keyboard-interactive"?
+fn wants_kbd(result: &AuthResult) -> bool {
+    matches!(result, AuthResult::Failure { remaining_methods, .. } if remaining_methods.contains(&MethodKind::KeyboardInteractive))
+}
+
+/// After a public-key attempt: is a second factor being requested? Either the
+/// server says "partial success", or keyboard-interactive is the only way left
+/// (some servers don't set the partial flag reliably).
+fn needs_second_factor(result: &AuthResult) -> bool {
+    match result {
+        AuthResult::Success => false,
+        AuthResult::Failure { remaining_methods, partial_success } => {
+            remaining_methods.contains(&MethodKind::KeyboardInteractive) && (*partial_success || !remaining_methods.contains(&MethodKind::PublicKey))
+        }
+    }
+}
+
+/// Run keyboard-interactive rounds, asking the user for each set of prompts.
+/// `prefill_password` answers a single hidden "Password:" prompt once (e.g. the
+/// saved password), so only the 2FA code has to be typed. Answers are never stored.
+async fn keyboard_interactive(handle: &mut Handle, ctx: &SessionContext, mut prefill_password: Option<Zeroizing<String>>) -> Result<AuthResult, Failure> {
+    let user = ctx.profile.input.username.clone();
+    let mut resp = handle.authenticate_keyboard_interactive_start(user, None::<String>).await.map_err(ssh_err)?;
+    for round in 1..=MAX_KBD_ROUNDS {
+        match resp {
+            KeyboardInteractiveAuthResponse::Success => return Ok(AuthResult::Success),
+            KeyboardInteractiveAuthResponse::Failure { remaining_methods, partial_success } => {
+                return Ok(AuthResult::Failure { remaining_methods, partial_success });
+            }
+            KeyboardInteractiveAuthResponse::InfoRequest { name, instructions, prompts } => {
+                let answers: Vec<Zeroizing<String>> = if prompts.is_empty() {
+                    Vec::new() // informational round: acknowledge
+                } else if prompts.len() == 1 && looks_like_password_prompt(&prompts[0].prompt, prompts[0].echo) && prefill_password.is_some() {
+                    vec![prefill_password.take().unwrap()]
+                } else {
+                    let rx = ctx.prompts.ask_interactive(&ctx.sid);
+                    ctx.emit(SessionState::AwaitingSecret, None);
+                    ctx.sink.event(SessionEvent::InteractivePrompt {
+                        name: clean(&name, 200),
+                        instructions: clean(&instructions, 2000),
+                        prompts: prompts.iter().map(|p| InteractiveQuestion { prompt: clean(&p.prompt, 300), echo: p.echo }).collect(),
+                        round,
+                    });
+                    let got = tokio::time::timeout(ctx.prompt_timeout, rx).await.ok().and_then(Result::ok);
+                    ctx.prompts.cancel(&ctx.sid);
+                    match got {
+                        Some(a) if a.len() == prompts.len() => {
+                            ctx.emit(SessionState::Authenticating, None);
+                            a
+                        }
+                        Some(_) => return Err(Failure::error("Wrong number of answers")),
+                        None => return Err(auth_failed("Authentication cancelled")),
+                    }
+                };
+                let plain: Vec<String> = answers.iter().map(|a| a.to_string()).collect();
+                resp = handle.authenticate_keyboard_interactive_respond(plain).await.map_err(ssh_err)?;
+            }
+        }
+    }
+    Err(auth_failed("Too many verification rounds"))
+}
+
+/// After a primary method: continue with keyboard-interactive if the server asks for it.
+async fn continue_if_needed(handle: &mut Handle, ctx: &SessionContext, result: AuthResult, prefill: Option<Zeroizing<String>>) -> Result<AuthResult, Failure> {
+    if !result.success() && wants_kbd(&result) {
+        return keyboard_interactive(handle, ctx, prefill).await;
+    }
+    Ok(result)
+}
+
 async fn password(handle: &mut Handle, ctx: &SessionContext) -> Result<(), Failure> {
     let user = ctx.profile.input.username.clone();
     let account = password_account(&ctx.profile.id);
@@ -66,7 +151,16 @@ async fn password(handle: &mut Handle, ctx: &SessionContext) -> Result<(), Failu
                 }
             }
         };
-        let result = handle.authenticate_password(user.clone(), secret.as_str()).await.map_err(ssh_err)?;
+        let first = handle.authenticate_password(user.clone(), secret.as_str()).await.map_err(ssh_err)?;
+        // Servers with "PasswordAuthentication no" often take the password via
+        // keyboard-interactive instead, and/or then ask for a 2FA code.
+        let password_refused_as_method = matches!(&first, AuthResult::Failure { remaining_methods, partial_success: false } if !remaining_methods.contains(&MethodKind::Password));
+        let partial = matches!(&first, AuthResult::Failure { partial_success: true, .. });
+        let result = if partial || password_refused_as_method {
+            continue_if_needed(handle, ctx, first, Some(secret.clone())).await?
+        } else {
+            first
+        };
         if result.success() {
             if remember && !from_store {
                 if let Err(e) = ctx.secrets.set(&account, &secret) {
@@ -142,6 +236,12 @@ async fn private_key(handle: &mut Handle, ctx: &SessionContext) -> Result<(), Fa
         .authenticate_publickey(ctx.profile.input.username.clone(), PrivateKeyWithHashAlg::new(Arc::new(key), hash))
         .await
         .map_err(ssh_err)?;
+    // Key accepted but a second factor required (AuthenticationMethods publickey,keyboard-interactive).
+    let result = if needs_second_factor(&result) {
+        continue_if_needed(handle, ctx, result, None).await?
+    } else {
+        result
+    };
     if result.success() {
         Ok(())
     } else {
@@ -190,6 +290,12 @@ where
             .map_err(|e| Failure::error(format!("SSH agent signing failed: {e:?}")))?;
         if result.success() {
             return Ok(());
+        }
+        if needs_second_factor(&result) {
+            return match continue_if_needed(handle, ctx, result, None).await? {
+                r if r.success() => Ok(()),
+                _ => Err(auth_failed("Second authentication factor was rejected")),
+            };
         }
     }
     Err(auth_failed("The server rejected all keys offered by the SSH agent"))

@@ -114,6 +114,13 @@ pub fn ssh_provide_secret(state: State<'_, AppState>, session_id: String, secret
     state.sessions.prompts.answer_secret(&session_id, answer)
 }
 
+/// Answers for a keyboard-interactive (2FA) round; `None` cancels. Never stored.
+#[tauri::command]
+pub fn ssh_provide_answers(state: State<'_, AppState>, session_id: String, answers: Option<Vec<String>>) -> AppResult<()> {
+    let answers = answers.map(|v| v.into_iter().map(Zeroizing::new).collect());
+    state.sessions.prompts.answer_interactive(&session_id, answers)
+}
+
 #[tauri::command]
 pub fn ssh_active_count(state: State<'_, AppState>) -> usize {
     state.sessions.active_count()

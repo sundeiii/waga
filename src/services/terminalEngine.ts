@@ -388,6 +388,9 @@ export const terminalEngine = {
       case "secretPrompt":
         sessions.pushPrompt({ type: "secret", tabId, sessionId: sid, kind: ev.kind, prompt: ev.prompt, attempt: ev.attempt });
         break;
+      case "interactivePrompt":
+        sessions.pushPrompt({ type: "interactive", tabId, sessionId: sid, name: ev.name, instructions: ev.instructions, prompts: ev.prompts, round: ev.round });
+        break;
     }
   },
 

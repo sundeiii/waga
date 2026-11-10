@@ -102,6 +102,7 @@ export const api = {
   sshClose: (sessionId: string) => invoke<void>("ssh_close", { sessionId }),
   sshHostKeyDecision: (sessionId: string, accept: boolean, acknowledgeChanged: boolean) =>
     invoke<void>("ssh_host_key_decision", { sessionId, accept, acknowledgeChanged }),
+  sshProvideAnswers: (sessionId: string, answers: string[] | null) => invoke<void>("ssh_provide_answers", { sessionId, answers }),
   sshProvideSecret: (sessionId: string, secret: string | null, remember: boolean) =>
     invoke<void>("ssh_provide_secret", { sessionId, secret, remember }),
 };

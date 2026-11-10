@@ -97,7 +97,8 @@ export type SessionEvent =
       status: HostKeyStatus;
       previous: { algorithm: string; fingerprint: string; addedAt: string }[];
     }
-  | { type: "secretPrompt"; kind: "password" | "passphrase"; prompt: string; attempt: number };
+  | { type: "secretPrompt"; kind: "password" | "passphrase"; prompt: string; attempt: number }
+  | { type: "interactivePrompt"; name: string; instructions: string; prompts: { prompt: string; echo: boolean }[]; round: number };
 
 export interface ActivityEntry {
   id: number;

@@ -19,6 +19,7 @@ pub struct SecretAnswer {
 enum Pending {
     HostKey(oneshot::Sender<HostKeyAnswer>),
     Secret(oneshot::Sender<SecretAnswer>),
+    Interactive(oneshot::Sender<Vec<Zeroizing<String>>>),
 }
 
 #[derive(Default)]
@@ -69,6 +70,30 @@ impl PromptRegistry {
                 Err(AppError::Validation("No credential prompt is pending for this session".into()))
             }
             None => Err(AppError::Validation("No credential prompt is pending for this session".into())),
+        }
+    }
+
+    pub fn ask_interactive(&self, sid: &str) -> oneshot::Receiver<Vec<Zeroizing<String>>> {
+        let (tx, rx) = oneshot::channel();
+        self.pending.lock().unwrap().insert(sid.to_string(), Pending::Interactive(tx));
+        rx
+    }
+
+    /// `None` cancels the prompt.
+    pub fn answer_interactive(&self, sid: &str, answers: Option<Vec<Zeroizing<String>>>) -> AppResult<()> {
+        let mut map = self.pending.lock().unwrap();
+        match map.remove(sid) {
+            Some(Pending::Interactive(tx)) => {
+                if let Some(a) = answers {
+                    let _ = tx.send(a);
+                }
+                Ok(())
+            }
+            Some(other) => {
+                map.insert(sid.to_string(), other);
+                Err(AppError::Validation("No verification prompt is pending for this session".into()))
+            }
+            None => Err(AppError::Validation("No verification prompt is pending for this session".into())),
         }
     }
 

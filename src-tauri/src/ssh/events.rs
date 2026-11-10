@@ -64,6 +64,22 @@ pub enum SessionEvent {
         prompt: String,
         attempt: u32,
     },
+    /// Keyboard-interactive round (2FA codes, PAM prompts). Text comes from
+    /// the server and is sanitized before being sent to the UI.
+    InteractivePrompt {
+        name: String,
+        instructions: String,
+        prompts: Vec<InteractiveQuestion>,
+        round: u32,
+    },
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InteractiveQuestion {
+    pub prompt: String,
+    /// false = hide input (passwords, codes)
+    pub echo: bool,
 }
 
 /// Where a session sends its events and terminal output.
