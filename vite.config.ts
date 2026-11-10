@@ -22,7 +22,9 @@ export default defineConfig({
     target: "chrome120",
     minify: !process.env.TAURI_ENV_DEBUG,
     sourcemap: !!process.env.TAURI_ENV_DEBUG,
-    chunkSizeWarningLimit: 900,
+    // Startup chunk is React + xterm + motion + Radix (~900 kB); heavy pages
+    // (charts, SFTP, settings) are lazy-loaded separately.
+    chunkSizeWarningLimit: 1000,
   },
   test: {
     environment: "node",

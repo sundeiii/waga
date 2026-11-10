@@ -52,6 +52,8 @@ pub fn run() {
             commands::settings::get_settings,
             commands::settings::update_settings,
             commands::settings::reset_settings,
+            commands::settings::export_settings,
+            commands::settings::delete_all_data,
             commands::servers::list_servers,
             commands::servers::create_server,
             commands::servers::update_server,

@@ -7,7 +7,7 @@ import { useUi } from "@/stores/ui";
 import { useSessions } from "@/stores/sessions";
 import { useSettings } from "@/stores/settings";
 import { NAV } from "./Sidebar";
-import { ACCENTS } from "@/pages/Settings";
+import { ACCENTS } from "@/lib/theme";
 
 const TITLES: Record<string, string> = Object.fromEntries([...NAV.map((n) => [n.id, n.label]), ["settings", "Settings"]]);
 

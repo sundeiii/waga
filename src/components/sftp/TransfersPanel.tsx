@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Folder, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Panel } from "@/components/ui/misc";
-import { Meter } from "@/components/monitoring/Charts";
+import { Meter } from "@/components/ui/Meter";
 import { api } from "@/services/api";
 import { formatBytes } from "@/stores/monitoring";
 import { useTransfers } from "@/stores/transfers";

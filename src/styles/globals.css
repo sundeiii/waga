@@ -15,7 +15,8 @@
   --color-line-strong: rgb(255 255 255 / 0.14);
   --color-fg: #f4f5f7;
   --color-muted: #9ba3b4;
-  --color-faint: #6b7285;
+  /* ≥ 4.5:1 on the dark surfaces for small text (was #6b7285 ≈ 3.9:1). */
+  --color-faint: #7d8599;
   --color-accent: var(--accent);
   --color-accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
   --color-success: #49c99a;

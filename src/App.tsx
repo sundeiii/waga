@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Background } from "@/components/layout/Background";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -10,15 +10,25 @@ import { PromptDialogs } from "@/components/terminal/PromptDialogs";
 import { Overview } from "@/pages/Overview";
 import { Servers } from "@/pages/Servers";
 import { TerminalPage } from "@/pages/Terminal";
-import { ActivityPage } from "@/pages/Activity";
-import { SettingsPage } from "@/pages/Settings";
-import { SnippetsPage } from "@/pages/Snippets";
 import { SnippetEditor } from "@/components/snippets/SnippetEditor";
 import { SnippetPalette } from "@/components/snippets/SnippetPalette";
 import { useSnippets } from "@/stores/snippets";
-import { MonitoringPage } from "@/pages/Monitoring";
-import { SFTPPage } from "@/pages/SFTP";
 import { initTransferEvents } from "@/stores/transfers";
+
+// Heavier pages load on first visit (charts, file manager, settings).
+const MonitoringPage = lazy(() => import("@/pages/Monitoring").then((m) => ({ default: m.MonitoringPage })));
+const SFTPPage = lazy(() => import("@/pages/SFTP").then((m) => ({ default: m.SFTPPage })));
+const SnippetsPage = lazy(() => import("@/pages/Snippets").then((m) => ({ default: m.SnippetsPage })));
+const ActivityPage = lazy(() => import("@/pages/Activity").then((m) => ({ default: m.ActivityPage })));
+const SettingsPage = lazy(() => import("@/pages/Settings").then((m) => ({ default: m.SettingsPage })));
+
+function PageFallback() {
+  return (
+    <div className="grid h-40 place-items-center" role="status" aria-label="Loading">
+      <YoruMark className="size-7 animate-pulse opacity-60" />
+    </div>
+  );
+}
 import { initMonitoringEvents } from "@/stores/monitoring";
 import { useLocalProfiles } from "@/stores/localProfiles";
 import { terminalEngine } from "@/services/terminalEngine";
@@ -150,13 +160,15 @@ export default function App() {
                   transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0 overflow-y-auto px-5 pb-6"
                 >
-                  {page === "overview" && <Overview />}
-                  {page === "servers" && <Servers />}
-                  {page === "sftp" && <SFTPPage preferredServer={sftpTarget} />}
-                  {page === "monitoring" && <MonitoringPage />}
-                  {page === "snippets" && <SnippetsPage />}
-                  {page === "activity" && <ActivityPage visible />}
-                  {page === "settings" && <SettingsPage visible />}
+                  <Suspense fallback={<PageFallback />}>
+                    {page === "overview" && <Overview />}
+                    {page === "servers" && <Servers />}
+                    {page === "sftp" && <SFTPPage preferredServer={sftpTarget} />}
+                    {page === "monitoring" && <MonitoringPage />}
+                    {page === "snippets" && <SnippetsPage />}
+                    {page === "activity" && <ActivityPage visible />}
+                    {page === "settings" && <SettingsPage visible />}
+                  </Suspense>
                 </motion.div>
               )}
             </AnimatePresence>

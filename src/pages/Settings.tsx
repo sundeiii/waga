@@ -12,15 +12,8 @@ import { THEMES } from "@/services/terminalEngine";
 import { formatTimestamp } from "@/lib/utils";
 import type { AppSettings, KnownHost } from "@/types";
 
-export const ACCENTS = [
-  { name: "Lavender", value: "#A99CF6" },
-  { name: "Periwinkle", value: "#8B9CF6" },
-  { name: "Moonlight", value: "#C9D2E8" },
-  { name: "Mint", value: "#6FD9B4" },
-  { name: "Sky", value: "#7CC4F8" },
-  { name: "Rose", value: "#F09AB8" },
-  { name: "Amber", value: "#F2B76B" },
-];
+import { ACCENTS } from "@/lib/theme";
+import { save as saveFile } from "@tauri-apps/plugin-dialog";
 
 function Section({ icon: Icon, title, children }: { icon: typeof Palette; title: string; children: ReactNode }) {
   return (
@@ -67,6 +60,7 @@ export function SettingsPage({ visible }: { visible: boolean }) {
   const reset = useSettings((s) => s.reset);
   const error = useSettings((s) => s.error);
   const askConfirm = useUi((s) => s.askConfirm);
+  const confirmAsync = useUi((s) => s.confirmAsync);
   const toast = useUi((s) => s.toast);
   const refreshServers = useServers((s) => s.refresh);
   const [hosts, setHosts] = useState<KnownHost[]>([]);
@@ -83,12 +77,29 @@ export function SettingsPage({ visible }: { visible: boolean }) {
   const c = settings.connections;
 
   const exportSettings = async () => {
-    const blob = JSON.stringify({ app: "yoru", version: 1, settings }, null, 2);
+    const path = await saveFile({ title: "Export yoru settings", defaultPath: "yoru-settings.json", filters: [{ name: "JSON", extensions: ["json"] }] });
+    if (!path) return;
     try {
-      await navigator.clipboard.writeText(blob);
-      toast("Settings JSON copied to clipboard (contains no secrets)", "success");
-    } catch {
-      toast("Clipboard is unavailable", "warning");
+      await api.exportSettings(path);
+      toast("Settings exported (preferences only, no servers or secrets)", "success");
+    } catch (e) {
+      toast(errorMessage(e), "danger");
+    }
+  };
+
+  const deleteEverything = async () => {
+    const ok = await confirmAsync({
+      title: "Delete ALL yoru data?",
+      body: "This ends every session and permanently removes all server profiles, saved passwords and passphrases (from Windows Credential Manager), trusted host keys, snippets, activity history and settings. It cannot be undone.",
+      confirmLabel: "Delete everything",
+      danger: true,
+    });
+    if (!ok) return;
+    try {
+      await api.deleteAllData();
+      window.location.reload();
+    } catch (e) {
+      toast(errorMessage(e), "danger");
     }
   };
 
@@ -327,9 +338,9 @@ export function SettingsPage({ visible }: { visible: boolean }) {
             <Trash2 /> Clear
           </Button>
         </Row>
-        <Row label="Export settings" hint="Non-sensitive preferences only">
-          <Button variant="secondary" size="sm" onClick={exportSettings}>
-            Copy JSON
+        <Row label="Export settings" hint="Preferences only — no servers, hosts or secrets">
+          <Button variant="secondary" size="sm" onClick={() => void exportSettings()}>
+            Export…
           </Button>
         </Row>
         <Row label="Reset preferences" hint="Restores default appearance, terminal and connection settings">
@@ -345,8 +356,10 @@ export function SettingsPage({ visible }: { visible: boolean }) {
             <RotateCcw /> Reset
           </Button>
         </Row>
-        <Row label="Delete all application data" hint="Not available in-app yet. Uninstall, then remove %APPDATA%\dev.yoru.app">
-          <span className="text-[12px] text-faint">Manual</span>
+        <Row label="Delete all application data" hint="Servers, credentials, host keys, snippets, history and settings">
+          <Button variant="danger" size="sm" onClick={() => void deleteEverything()}>
+            <Trash2 /> Delete everything
+          </Button>
         </Row>
       </Section>
     </div>

@@ -11,7 +11,7 @@ import { useSessions, type TabState } from "@/stores/sessions";
 import { cn, displayEndpoint, relativeTime } from "@/lib/utils";
 import type { ServerView } from "@/types";
 import { PROFILE_KINDS } from "./ServerDialog";
-import { Meter } from "@/components/monitoring/Charts";
+import { Meter } from "@/components/ui/Meter";
 import { diskPercent, formatUptime, memPercent, rootDisk, useMonitoring } from "@/stores/monitoring";
 
 /** Best state across this server's tabs (connected > connecting > failed > idle). */
@@ -138,7 +138,7 @@ function Metric({ label, percent, text }: { label: string; percent?: number | nu
   return (
     <div className="min-w-0">
       <div className="text-[10.5px] uppercase tracking-wider text-faint">{label}</div>
-      {percent !== undefined ? <Meter percent={percent} className="mt-1 h-1" /> : <div className="mt-1 h-1" />}
+      {percent !== undefined ? <Meter percent={percent} className="mt-1 h-1" label={`${label} usage`} /> : <div className="mt-1 h-1" />}
       <div className={cn("mt-1 truncate font-mono text-[11.5px] tabular-nums", shown ? "text-fg" : "text-faint")}>{shown ?? "n/a"}</div>
     </div>
   );

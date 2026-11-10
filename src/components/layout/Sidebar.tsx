@@ -46,6 +46,7 @@ export function Sidebar() {
         key={id}
         onClick={() => setPage(id)}
         title={collapsed ? label : undefined}
+        aria-label={collapsed ? (badge ? `${label}, ${badge} connected` : label) : undefined}
         aria-current={active ? "page" : undefined}
         className={cn(
           "group relative flex h-9 w-full items-center rounded-xl text-[13.5px] font-medium transition-colors duration-150",

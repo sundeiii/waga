@@ -30,6 +30,8 @@ export const api = {
   getSettings: () => invoke<AppSettings>("get_settings"),
   updateSettings: (settings: AppSettings) => invoke<AppSettings>("update_settings", { settings }),
   resetSettings: () => invoke<AppSettings>("reset_settings"),
+  exportSettings: (path: string) => invoke<void>("export_settings", { path }),
+  deleteAllData: () => invoke<void>("delete_all_data"),
   setAutostart: (enabled: boolean) => invoke<void>("set_autostart", { enabled }),
   autostartEnabled: () => invoke<boolean>("autostart_enabled"),
   /** Native notification (backend honours the user's setting). */

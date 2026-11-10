@@ -114,12 +114,4 @@ export function Legend({ items }: { items: { label: string; value: string }[] })
   );
 }
 
-/** Thin meter: used for disks (magnitude, one hue) and card mini-metrics. */
-export function Meter({ percent, className }: { percent: number | null; className?: string }) {
-  const tone = percent == null ? "" : percent >= 90 ? "bg-danger" : percent >= 75 ? "bg-warning" : "bg-accent";
-  return (
-    <div className={`h-1.5 overflow-hidden rounded-full bg-white/[0.06] ${className ?? ""}`}>
-      {percent != null && <div className={`h-full rounded-full transition-[width] duration-300 ${tone}`} style={{ width: `${Math.max(2, Math.min(100, percent))}%` }} />}
-    </div>
-  );
-}
+export { Meter } from "@/components/ui/Meter";

@@ -23,7 +23,12 @@ Tauri 2 (Rust) + React. Dark glassmorphism, lavender accents, real SSH.
 | SFTP dual-pane file manager over the open SSH session: browse, breadcrumbs, hidden files, mkdir, rename, delete (local → Recycle Bin), drag-and-drop transfers with progress + cancel, overwrite only after confirmation, atomic `.yoru-partial` writes | ✅ |
 | Local terminals (cmd, Windows PowerShell, PowerShell 7, WSL) from your **Windows Terminal profiles**, incl. their color scheme and font, via ConPTY. Ctrl+Shift+T opens the default profile | ✅ |
 | Command snippets: categories, search, tags, favorites, starter set of read-only diagnostics; **Insert** (default) never executes — multi-line inserts into shells without bracketed paste ask first; **Run** always confirms showing the exact command and target; quick picker with Ctrl+Shift+S | ✅ |
-| Jump hosts, folder transfers, tray, start-with-Windows | ⏳ not yet |
+| Keyboard-interactive / **2FA** (verification codes, PAM): prompts shown as-is, hidden ones masked, answers never stored; saved password is pre-filled so only the code is typed; works after key/agent login too | ✅ |
+| **Jump hosts** (ProxyJump): connect through other saved servers (≤ 3 hops) via direct-tcpip tunnels; host key + login verified per hop | ✅ |
+| SFTP **folder transfers** (recursive, symlinks skipped, bounded), 32 requests in flight | ✅ |
+| **System tray** (click to show/hide; Open / New local terminal / Quit), optional close-to-tray, start with Windows (optionally minimized), notifications for dropped sessions and finished transfers, single instance | ✅ |
+| Settings export to a JSON file (preferences only) and in-app "delete all data" | ✅ |
+| Host certificates (CA trust), port forwarding UI, light theme | ⏳ not yet |
 
 ## Architecture
 
@@ -64,8 +69,9 @@ services/terminalEngine.ts  ◀──────   credentials/   Windows Crede
   them as unavailable. If no session is open the monitor waits, then stops
   itself; it never connects on its own. Remote strings are stripped of
   control characters. History lives in memory only (last 360 samples).
-* **Least privilege.** The webview gets `core:default` and
-  `dialog:allow-open` (key file picker) only. No shell, fs, or http plugins.
+* **Least privilege.** The webview gets `core:default`, `dialog:allow-open`
+  (key file picker) and `dialog:allow-save` (settings export) only. Tray,
+  notifications and autostart are driven from Rust. No shell, fs, or http plugins.
   Strict CSP. No network listeners. No telemetry, no cloud.
 
 ### Tradeoffs
