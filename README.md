@@ -31,6 +31,9 @@ Tauri 2 (Rust) + React. Dark glassmorphism, lavender accents, real SSH.
 | Local **port forwarding** (ssh -L): saved per server, auto-start, 127.0.0.1-only listeners, live stats | ✅ |
 | **Host certificates**: trusted CAs with host patterns; strict checks (host type, principal, validity, signature) | ✅ |
 | **Light theme** (dark / light / follow Windows), incl. title bar, Mica variant and auto terminal scheme | ✅ |
+| **Encrypted backup / restore** (`.yorubackup`, Argon2id + XChaCha20-Poly1305): profiles, snippets, forwards, CAs, trusted host keys; saved passwords only if you opt in. Restore merges | ✅ |
+| **Sync between PCs** through any shared folder (OneDrive, Dropbox, Syncthing, NAS): one encrypted file per device, newest edit wins, deletions carried over; passphrase kept in Credential Manager | ✅ |
+| **Import from cloud**: DigitalOcean, Hetzner, Linode (read-only API token, optionally kept in Credential Manager); AWS and Azure through your signed-in `aws` / `az` CLI | ✅ |
 | Remote / dynamic (SOCKS) forwarding | ⏳ not yet |
 
 ## Architecture
@@ -165,6 +168,7 @@ wider distribution, sign it with a code-signing certificate
 
 * Profiles, settings, trusted host keys, activity: `%APPDATA%\dev.yoru.app\yoru.db`
 * Secrets: Windows Credential Manager → *Windows Credentials* → entries for service `yoru`
+* Sync files: `<your folder>yoru-sync<device-id>.yorusync` (encrypted; nothing readable without the passphrase)
 
 ## Keyboard shortcuts
 
