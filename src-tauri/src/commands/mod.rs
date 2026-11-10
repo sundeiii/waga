@@ -2,6 +2,7 @@
 
 pub mod activity;
 pub mod backup;
+pub mod cloud;
 pub mod forwards;
 pub mod local;
 pub mod monitoring;

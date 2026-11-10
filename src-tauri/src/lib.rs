@@ -1,5 +1,6 @@
 //! Yoru — SSH & Server Manager (Rust backend).
 
+pub mod cloud;
 pub mod commands;
 pub mod credentials;
 pub mod database;
@@ -88,6 +89,10 @@ pub fn run() {
             commands::backup::sync_status,
             commands::backup::set_sync_passphrase,
             commands::backup::sync_now,
+            commands::cloud::cloud_list,
+            commands::cloud::cloud_has_token,
+            commands::cloud::cloud_forget_token,
+            commands::cloud::cloud_import,
             commands::forwards::list_saved_forwards,
             commands::forwards::save_forward,
             commands::forwards::delete_saved_forward,

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { LayoutGrid, List, Plus, SearchX, Server, Star } from "lucide-react";
+import { CloudDownload, LayoutGrid, List, Plus, SearchX, Server, Star } from "lucide-react";
+import { CloudImportDialog } from "@/components/servers/CloudImportDialog";
 import { Button } from "@/components/ui/Button";
 import { Badge, EmptyState, Panel, StatusDot } from "@/components/ui/misc";
 import { Select } from "@/components/ui/Input";
@@ -51,6 +52,8 @@ export function Servers() {
   const [tag, setTag] = useState<string | null>(null);
   const [group, setGroup] = useState<string>("");
   const [favOnly, setFavOnly] = useState(false);
+  const [cloudOpen, setCloudOpen] = useState(false);
+  const cloudDialog = <CloudImportDialog open={cloudOpen} onClose={() => setCloudOpen(false)} />;
 
   const allTags = useMemo(() => [...new Set(servers.flatMap((s) => s.tags))].sort(), [servers]);
   const groups = useMemo(() => [...new Set(servers.map((s) => s.groupName).filter(Boolean) as string[])].sort(), [servers]);
@@ -83,23 +86,32 @@ export function Servers() {
 
   if (loaded && servers.length === 0) {
     return (
-      <Panel className="mx-auto mt-6 max-w-2xl">
+      <>
+        <Panel className="mx-auto mt-6 max-w-2xl">
         <EmptyState
           icon={<Server />}
           title="No servers yet"
           body="Save a profile for each machine you manage: Linux, Windows OpenSSH, Proxmox, local VMs."
           action={
-            <Button variant="primary" onClick={() => openServerDialog()}>
-              <Plus /> Add server
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="primary" onClick={() => openServerDialog()}>
+                <Plus /> Add server
+              </Button>
+              <Button onClick={() => setCloudOpen(true)}>
+                <CloudDownload /> Import from cloud
+              </Button>
+            </div>
           }
         />
-      </Panel>
+        </Panel>
+        {cloudDialog}
+      </>
     );
   }
 
   return (
     <div className="space-y-5">
+      {cloudDialog}
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setFavOnly((v) => !v)}
@@ -131,6 +143,9 @@ export function Servers() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <Button size="sm" onClick={() => setCloudOpen(true)}>
+            <CloudDownload /> Import from cloud
+          </Button>
           <div className="w-44">
             <Select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sort servers" className="h-8 text-[12.5px]">
               <option value="name">Sort by name</option>
