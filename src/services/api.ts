@@ -17,6 +17,8 @@ import type {
   Snippet,
   SnippetInput,
   UpdateInfo,
+  MergeStats,
+  SyncReport,
 } from "@/types";
 
 /** Normalize anything thrown by invoke into a readable message. */
@@ -37,6 +39,13 @@ export const api = {
   resetSettings: () => invoke<AppSettings>("reset_settings"),
   exportSettings: (path: string) => invoke<void>("export_settings", { path }),
   deleteAllData: () => invoke<void>("delete_all_data"),
+  // backup & sync
+  exportBackup: (path: string, passphrase: string, includeSecrets: boolean) => invoke<void>("export_backup", { path, passphrase, includeSecrets }),
+  importBackup: (path: string, passphrase: string) => invoke<MergeStats>("import_backup", { path, passphrase }),
+  syncStatus: () => invoke<{ hasPassphrase: boolean; deviceId: string }>("sync_status"),
+  setSyncPassphrase: (passphrase: string | null) => invoke<void>("set_sync_passphrase", { passphrase }),
+  syncNow: () => invoke<SyncReport>("sync_now"),
+
   appVersion: () => invoke<string>("app_version"),
   checkForUpdate: () => invoke<UpdateInfo | null>("check_for_update"),
   installUpdate: () => invoke<void>("install_update"),

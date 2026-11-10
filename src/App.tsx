@@ -16,6 +16,7 @@ import { useSnippets } from "@/stores/snippets";
 import { initTransferEvents } from "@/stores/transfers";
 import { initForwardEvents } from "@/stores/forwards";
 import { initUpdates } from "@/stores/updates";
+import { initSync } from "@/stores/sync";
 import { ForwardsDialog } from "@/components/servers/ForwardsDialog";
 
 // Heavier pages load on first visit (charts, file manager, settings).
@@ -113,6 +114,7 @@ export default function App() {
     initTransferEvents();
     initForwardEvents();
     initUpdates();
+    initSync();
     // Tray menu → "New local terminal".
     const unlisten = listen("tray://new-local", () => {
       const p = useLocalProfiles.getState().defaultProfile();

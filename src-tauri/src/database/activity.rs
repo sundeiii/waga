@@ -22,6 +22,7 @@ pub enum ActivityKind {
     ServerDeleted,
     CredentialsDeleted,
     MonitoringFailed,
+    Sync,
 }
 
 impl ActivityKind {
@@ -40,6 +41,7 @@ impl ActivityKind {
             Self::ServerDeleted => "serverDeleted",
             Self::CredentialsDeleted => "credentialsDeleted",
             Self::MonitoringFailed => "monitoringFailed",
+            Self::Sync => "sync",
         }
     }
 }

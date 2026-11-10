@@ -79,6 +79,27 @@ export interface AppSettings {
     notifications: boolean;
     checkUpdates: boolean;
   };
+  sync: {
+    enabled: boolean;
+    folder: string;
+    includeSecrets: boolean;
+    deviceName: string;
+    intervalMins: number;
+  };
+}
+
+export interface MergeStats {
+  added: number;
+  updated: number;
+  deleted: number;
+  secrets: number;
+}
+
+export interface SyncReport {
+  stats: MergeStats;
+  devices: { deviceId: string; deviceName: string; writtenAt: string; isSelf: boolean }[];
+  errors: string[];
+  at: string;
 }
 
 export interface UpdateInfo {

@@ -120,6 +120,31 @@ impl Default for SystemSettings {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct SyncSettings {
+    pub enabled: bool,
+    /// A folder the user already syncs (OneDrive, Dropbox, NAS…).
+    pub folder: String,
+    /// Also sync saved passwords/passphrases (encrypted end to end).
+    pub include_secrets: bool,
+    /// Shown to other PCs.
+    pub device_name: String,
+    pub interval_mins: u32,
+}
+
+impl Default for SyncSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            folder: String::new(),
+            include_secrets: false,
+            device_name: std::env::var("COMPUTERNAME").unwrap_or_else(|_| "This PC".into()),
+            interval_mins: 5,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase", default)]
 pub struct AppSettings {
@@ -128,6 +153,7 @@ pub struct AppSettings {
     pub connections: ConnectionSettings,
     pub monitoring: MonitoringSettings,
     pub system: SystemSettings,
+    pub sync: SyncSettings,
 }
 
 impl AppSettings {
@@ -177,6 +203,15 @@ impl AppSettings {
         }
         if c.default_port == 0 {
             return bad("Default port must be between 1 and 65535");
+        }
+        if !(1..=120).contains(&self.sync.interval_mins) {
+            return bad("Sync interval must be between 1 and 120 minutes");
+        }
+        if self.sync.device_name.trim().is_empty() || self.sync.device_name.chars().count() > 80 {
+            return bad("Device name must be 1–80 characters");
+        }
+        if self.sync.folder.len() > 1000 || self.sync.folder.chars().any(|c| c.is_control()) {
+            return bad("Invalid sync folder");
         }
         if !(1..=300).contains(&self.monitoring.interval_secs) {
             return bad("Monitoring interval must be between 1 and 300 seconds");

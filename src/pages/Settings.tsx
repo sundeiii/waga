@@ -15,7 +15,8 @@ import type { AppSettings, KnownHost } from "@/types";
 import { ACCENTS } from "@/lib/theme";
 import { HostCaSection } from "@/components/settings/HostCaSection";
 import { UpdatesSection } from "@/components/settings/UpdatesSection";
-import { ArrowUpCircle } from "lucide-react";
+import { BackupSyncSection } from "@/components/settings/BackupSyncSection";
+import { ArrowUpCircle, Cloud } from "lucide-react";
 import { save as saveFile } from "@tauri-apps/plugin-dialog";
 
 function Section({ icon: Icon, title, children }: { icon: typeof Palette; title: string; children: ReactNode }) {
@@ -311,6 +312,10 @@ export function SettingsPage({ visible }: { visible: boolean }) {
           ))
         )}
         <HostCaSection />
+      </Section>
+
+      <Section icon={Cloud} title="Backup & sync">
+        <BackupSyncSection />
       </Section>
 
       <Section icon={ArrowUpCircle} title="About & updates">

@@ -1,6 +1,7 @@
 //! Typed Tauri commands. Each command is thin; logic lives in the domain modules.
 
 pub mod activity;
+pub mod backup;
 pub mod forwards;
 pub mod local;
 pub mod monitoring;
