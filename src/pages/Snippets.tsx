@@ -11,7 +11,7 @@ import { cn, relativeTime } from "@/lib/utils";
 import { SNIPPET_CATEGORIES, type Snippet, type SnippetCategory } from "@/types";
 
 const menuItem =
-  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-fg [&_svg]:size-4";
+  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-ink/[0.06] data-[highlighted]:text-fg [&_svg]:size-4";
 
 export function SnippetsPage() {
   const { snippets, loaded, load, openEditor, remove, toggleFavorite } = useSnippets();
@@ -63,7 +63,7 @@ export function SnippetsPage() {
     <button
       key={id}
       onClick={() => setCat(id)}
-      className={cn("flex h-8 w-full items-center justify-between rounded-lg px-2.5 text-[13px] transition-colors", cat === id ? "bg-white/[0.07] text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg")}
+      className={cn("flex h-8 w-full items-center justify-between rounded-lg px-2.5 text-[13px] transition-colors", cat === id ? "bg-ink/[0.07] text-fg" : "text-muted hover:bg-ink/[0.04] hover:text-fg")}
     >
       <span className="truncate">{label}</span>
       <span className="text-[11px] tabular-nums text-faint">{counts[id] ?? 0}</span>
@@ -88,7 +88,7 @@ export function SnippetsPage() {
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search title, command, tags"
               aria-label="Search snippets"
-              className="h-8 w-full rounded-[10px] border border-line bg-black/25 pl-8 pr-2 text-[12.5px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
+              className="h-8 w-full rounded-[10px] border border-line bg-shade/25 pl-8 pr-2 text-[12.5px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
             />
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -167,7 +167,7 @@ export function SnippetsPage() {
                     </DM.Portal>
                   </DM.Root>
                 </div>
-                <pre className="selectable mt-3 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-line bg-black/30 px-3 py-2 font-mono text-[12px] leading-relaxed text-fg">{s.command}</pre>
+                <pre className="selectable mt-3 max-h-28 overflow-auto whitespace-pre-wrap break-all rounded-lg border border-line bg-shade/30 px-3 py-2 font-mono text-[12px] leading-relaxed text-fg">{s.command}</pre>
                 <div className="mt-3 flex items-center gap-1.5">
                   <Badge tone="accent">{CATEGORY_LABEL[s.category]}</Badge>
                   {s.tags.slice(0, 3).map((t) => (

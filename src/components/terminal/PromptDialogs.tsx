@@ -151,7 +151,7 @@ function HostKeyDialog({ p }: { p: Extract<Prompt, { type: "hostKey" }> }) {
       }
     >
       <div className="space-y-3 pb-3">
-        <div className="rounded-xl border border-line bg-black/30 p-3.5">
+        <div className="rounded-xl border border-line bg-shade/30 p-3.5">
           <div className="text-[11px] uppercase tracking-wider text-faint">{changed ? "Presented key (new)" : "Fingerprint"}</div>
           <div className="selectable mt-1 break-all font-mono text-[13px] text-fg">{p.fingerprint}</div>
           <div className="mt-2 text-[12px] text-muted">
@@ -159,7 +159,7 @@ function HostKeyDialog({ p }: { p: Extract<Prompt, { type: "hostKey" }> }) {
           </div>
         </div>
         {changed && p.previous.length > 0 && (
-          <div className="rounded-xl border border-line bg-black/20 p-3.5">
+          <div className="rounded-xl border border-line bg-shade/20 p-3.5">
             <div className="text-[11px] uppercase tracking-wider text-faint">Previously trusted</div>
             {p.previous.map((k) => (
               <div key={k.fingerprint} className="mt-1.5">

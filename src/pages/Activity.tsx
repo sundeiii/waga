@@ -56,7 +56,7 @@ export function ActivityPage({ visible }: { visible: boolean }) {
             onChange={(e) => setQ(e.target.value)}
             placeholder="Filter activity"
             aria-label="Filter activity"
-            className="h-8 w-full rounded-[10px] border border-line bg-black/25 pl-8 pr-2 text-[12.5px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
+            className="h-8 w-full rounded-[10px] border border-line bg-shade/25 pl-8 pr-2 text-[12.5px] outline-none transition-[border-color,box-shadow] placeholder:text-faint focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
           />
         </div>
         {["connected", "authFailed", "connectionError", "hostKeyChanged", "monitoringFailed"].map((k) => (
@@ -98,7 +98,7 @@ export function ActivityPage({ visible }: { visible: boolean }) {
             {filtered.map((e) => {
               const k = KIND[e.kind] ?? { label: e.kind, tone: "neutral" as const };
               return (
-                <div key={e.id} className="grid grid-cols-[170px_150px_140px_1fr] items-center gap-3 px-4 py-2.5 text-[12.5px] hover:bg-white/[0.02]">
+                <div key={e.id} className="grid grid-cols-[170px_150px_140px_1fr] items-center gap-3 px-4 py-2.5 text-[12.5px] hover:bg-ink/[0.02]">
                   <span className="font-mono text-[11.5px] text-faint">{formatTimestamp(e.ts)}</span>
                   <span>
                     <Badge tone={k.tone}>{k.label}</Badge>

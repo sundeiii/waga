@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const base =
   // Focus = accent border + soft 3px halo (no browser outline, no double ring).
-  "w-full rounded-xl bg-black/25 border border-line text-sm text-fg placeholder:text-faint transition-[border-color,box-shadow] duration-150 hover:border-line-strong outline-none focus-visible:outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)] disabled:opacity-50 aria-[invalid=true]:border-danger/60 aria-[invalid=true]:focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-danger)_16%,transparent)]";
+  "w-full rounded-xl bg-shade/25 border border-line text-sm text-fg placeholder:text-faint transition-[border-color,box-shadow] duration-150 hover:border-line-strong outline-none focus-visible:outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)] disabled:opacity-50 aria-[invalid=true]:border-danger/60 aria-[invalid=true]:focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-danger)_16%,transparent)]";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(({ className, ...p }, ref) => (
   <input ref={ref} className={cn(base, "h-9 px-3", className)} spellCheck={false} autoComplete="off" {...p} />

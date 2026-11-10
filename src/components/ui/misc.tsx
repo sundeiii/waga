@@ -12,7 +12,7 @@ export function Panel({ className, children, ...p }: React.HTMLAttributes<HTMLDi
 
 export function Badge({ children, tone = "neutral", className }: { children: ReactNode; tone?: "neutral" | "accent" | "success" | "warning" | "danger"; className?: string }) {
   const tones = {
-    neutral: "bg-white/[0.06] text-muted border-line",
+    neutral: "bg-ink/[0.06] text-muted border-line",
     accent: "bg-accent-soft text-accent border-accent/25",
     success: "bg-success/12 text-success border-success/25",
     warning: "bg-warning/12 text-warning border-warning/25",
@@ -56,7 +56,7 @@ export function FilterChip({
 }
 
 export function Kbd({ children }: { children: ReactNode }) {
-  return <kbd className="rounded-md border border-line bg-white/5 px-1.5 py-0.5 font-mono text-[10.5px] text-muted">{children}</kbd>;
+  return <kbd className="rounded-md border border-line bg-ink/5 px-1.5 py-0.5 font-mono text-[10.5px] text-muted">{children}</kbd>;
 }
 
 export const STATE_META: Record<TabState | "idle", { label: string; color: string; pulse?: boolean }> = {
@@ -88,7 +88,7 @@ export function StatusDot({ state, className }: { state: TabState | "idle"; clas
 export function EmptyState({ icon, title, body, action }: { icon: ReactNode; title: string; body: ReactNode; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-      <div className="mb-5 grid size-14 place-items-center rounded-2xl border border-line bg-white/[0.04] text-accent shadow-[0_0_40px_-10px_var(--accent)] [&_svg]:size-6">
+      <div className="mb-5 grid size-14 place-items-center rounded-2xl border border-line bg-ink/[0.04] text-accent shadow-[0_0_40px_-10px_var(--accent)] [&_svg]:size-6">
         {icon}
       </div>
       <h3 className="text-[15px] font-semibold tracking-tight">{title}</h3>

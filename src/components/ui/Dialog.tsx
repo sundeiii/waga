@@ -50,7 +50,7 @@ export function Dialog({
               )}
             </div>
             {dismissable && (
-              <RD.Close className="-mr-2 rounded-lg p-1.5 text-faint transition-colors hover:bg-white/5 hover:text-fg" aria-label="Close">
+              <RD.Close className="-mr-2 rounded-lg p-1.5 text-faint transition-colors hover:bg-ink/5 hover:text-fg" aria-label="Close">
                 <X className="size-4" />
               </RD.Close>
             )}

@@ -95,7 +95,7 @@ export function SnippetEditor() {
         <Field label="Tags" hint="Comma separated" className="col-span-4" htmlFor="sn-tags">
           <Input id="sn-tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="web, nginx" />
         </Field>
-        <label className="col-span-2 flex items-center justify-between self-end rounded-xl border border-line bg-black/15 px-3 py-2 text-[13px]">
+        <label className="col-span-2 flex items-center justify-between self-end rounded-xl border border-line bg-shade/15 px-3 py-2 text-[13px]">
           Favorite
           <Switch checked={form.favorite} onCheckedChange={(v) => set("favorite", v)} label="Favorite" />
         </label>

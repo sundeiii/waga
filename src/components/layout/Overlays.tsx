@@ -47,7 +47,7 @@ export function ConfirmDialog() {
       }
     >
       {confirm.code ? (
-        <pre className="selectable mb-3 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-line bg-black/35 p-3 font-mono text-[12.5px] leading-relaxed text-fg">{confirm.code}</pre>
+        <pre className="selectable mb-3 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-xl border border-line bg-shade/35 p-3 font-mono text-[12.5px] leading-relaxed text-fg">{confirm.code}</pre>
       ) : null}
     </Dialog>
   );

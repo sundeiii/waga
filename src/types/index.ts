@@ -41,6 +41,7 @@ export interface SecretUpdate {
 
 export interface AppSettings {
   appearance: {
+    theme: "dark" | "light" | "system";
     accent: string;
     windowMaterial: "acrylic" | "mica" | "none";
     windowTint: number;

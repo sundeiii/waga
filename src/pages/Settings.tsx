@@ -109,8 +109,20 @@ export function SettingsPage({ visible }: { visible: boolean }) {
       {error && <p className="col-span-full rounded-xl border border-danger/30 bg-danger/10 px-4 py-2 text-[13px] text-danger">{error}</p>}
 
       <Section icon={Palette} title="Appearance">
-        <Row label="Theme" hint="Light mode is not available yet">
-          <span className="text-[13px] text-muted">Dark</span>
+        <Row label="Theme" hint={a.theme === "system" ? "Follows Windows' app mode" : undefined}>
+          <div className="flex rounded-[10px] border border-line p-0.5" role="radiogroup" aria-label="Theme">
+            {(["dark", "light", "system"] as const).map((th) => (
+              <button
+                key={th}
+                role="radio"
+                aria-checked={a.theme === th}
+                onClick={() => set("appearance", { theme: th })}
+                className={`h-7 rounded-lg px-3 text-[12.5px] capitalize transition-colors ${a.theme === th ? "bg-ink/10 text-fg" : "text-muted hover:text-fg"}`}
+              >
+                {th}
+              </button>
+            ))}
+          </div>
         </Row>
         <Row label="Accent color">
           <div className="flex gap-1.5">
@@ -172,6 +184,7 @@ export function SettingsPage({ visible }: { visible: boolean }) {
         <Row label="Color scheme">
           <div className="w-40">
             <Select value={t.theme} onChange={(e) => set("terminal", { theme: e.target.value })}>
+              <option value="auto">Auto (match app)</option>
               {Object.keys(THEMES).map((k) => (
                 <option key={k} value={k}>
                   {k[0].toUpperCase() + k.slice(1)}

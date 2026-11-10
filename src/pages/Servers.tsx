@@ -16,7 +16,7 @@ function Row({ s }: { s: ServerView }) {
   const state = useServerState(s.id);
   const a = useServerActions(s);
   return (
-    <div className="grid grid-cols-[20px_1.2fr_1.4fr_1fr_120px_auto] items-center gap-3 border-b border-line px-4 py-2.5 text-[13px] last:border-0 hover:bg-white/[0.025]">
+    <div className="grid grid-cols-[20px_1.2fr_1.4fr_1fr_120px_auto] items-center gap-3 border-b border-line px-4 py-2.5 text-[13px] last:border-0 hover:bg-ink/[0.025]">
       <StatusDot state={state} />
       <div className="flex min-w-0 items-center gap-2">
         <span className="truncate font-medium">{s.name}</span>
@@ -139,10 +139,10 @@ export function Servers() {
             </Select>
           </div>
           <div className="flex rounded-[10px] border border-line p-0.5">
-            <Button variant="ghost" size="icon" className={cn("size-7", view === "grid" && "bg-white/10 text-fg")} onClick={() => setView("grid")} aria-label="Grid view">
+            <Button variant="ghost" size="icon" className={cn("size-7", view === "grid" && "bg-ink/10 text-fg")} onClick={() => setView("grid")} aria-label="Grid view">
               <LayoutGrid />
             </Button>
-            <Button variant="ghost" size="icon" className={cn("size-7", view === "list" && "bg-white/10 text-fg")} onClick={() => setView("list")} aria-label="List view">
+            <Button variant="ghost" size="icon" className={cn("size-7", view === "list" && "bg-ink/10 text-fg")} onClick={() => setView("list")} aria-label="List view">
               <List />
             </Button>
           </div>

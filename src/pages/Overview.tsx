@@ -10,7 +10,7 @@ import { useMonitoring } from "@/stores/monitoring";
 import { cn } from "@/lib/utils";
 
 function Stat({ icon: Icon, label, value, hint, tone = "accent", i }: { icon: typeof Server; label: string; value: number | string; hint: string; tone?: "accent" | "success" | "warning" | "muted"; i: number }) {
-  const tones = { accent: "text-accent bg-accent-soft", success: "text-success bg-success/12", warning: "text-warning bg-warning/12", muted: "text-muted bg-white/[0.06]" };
+  const tones = { accent: "text-accent bg-accent-soft", success: "text-success bg-success/12", warning: "text-warning bg-warning/12", muted: "text-muted bg-ink/[0.06]" };
   return (
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: i * 0.04, ease: [0.22, 1, 0.36, 1] }}>
       <Panel className="flex h-full items-center gap-3.5 p-4">

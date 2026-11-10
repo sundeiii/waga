@@ -28,11 +28,11 @@ export function TerminalTabs() {
           className={cn(
             // Inset focus ring: an outer outline gets clipped by the scrolling tab strip.
             "group relative flex h-8 max-w-52 shrink-0 cursor-default items-center gap-2 rounded-[10px] pl-3 pr-1.5 text-[12.5px] outline-none transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-accent/60",
-            t.id === active ? "text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg",
+            t.id === active ? "text-fg" : "text-muted hover:bg-ink/[0.04] hover:text-fg",
           )}
         >
           {t.id === active && (
-            <motion.span layoutId="tab-active" className="absolute inset-0 rounded-[10px] border border-line bg-white/[0.07]" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
+            <motion.span layoutId="tab-active" className="absolute inset-0 rounded-[10px] border border-line bg-ink/[0.07]" transition={{ type: "spring", stiffness: 500, damping: 40 }} />
           )}
           {t.kind === "local" ? <Monitor className="relative size-3.5 shrink-0 text-faint" aria-label="Local shell" /> : <StatusDot state={t.state} className="relative" />}
           <span className="relative truncate">{t.title}</span>
@@ -41,7 +41,7 @@ export function TerminalTabs() {
               e.stopPropagation();
               terminalEngine.close(t.id);
             }}
-            className="relative grid size-5 place-items-center rounded-md text-faint opacity-60 transition hover:bg-white/10 hover:text-fg group-hover:opacity-100"
+            className="relative grid size-5 place-items-center rounded-md text-faint opacity-60 transition hover:bg-ink/10 hover:text-fg group-hover:opacity-100"
             aria-label={`Close ${t.title}`}
           >
             <X className="size-3.5" />
@@ -87,7 +87,7 @@ export function TerminalToolbar() {
   return (
     <div className="flex shrink-0 items-center gap-1">
       {searchOpen ? (
-        <div className="flex items-center gap-1 rounded-[10px] border border-line bg-black/30 pl-2.5">
+        <div className="flex items-center gap-1 rounded-[10px] border border-line bg-shade/30 pl-2.5">
           <Search className="size-3.5 text-faint" />
           <input
             ref={inputRef}

@@ -8,15 +8,18 @@
   --font-sans: "Inter Variable", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", "Cascadia Code", Consolas, monospace;
 
-  --color-bg: #0b0d12;
-  --color-surface: #12151d;
-  --color-elevated: #191d27;
-  --color-line: rgb(255 255 255 / 0.08);
-  --color-line-strong: rgb(255 255 255 / 0.14);
-  --color-fg: #f4f5f7;
-  --color-muted: #9ba3b4;
-  /* ≥ 4.5:1 on the dark surfaces for small text (was #6b7285 ≈ 3.9:1). */
-  --color-faint: #7d8599;
+  /* All theme colors resolve through :root variables so the light theme can
+     swap them; `ink` = foreground overlay, `shade` = inset/background overlay. */
+  --color-bg: rgb(var(--bg-rgb));
+  --color-surface: rgb(var(--surface-rgb));
+  --color-elevated: rgb(var(--elevated-rgb));
+  --color-ink: rgb(var(--ink-rgb));
+  --color-shade: rgb(var(--shade-rgb));
+  --color-line: rgb(var(--ink-rgb) / 0.08);
+  --color-line-strong: rgb(var(--ink-rgb) / 0.14);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-accent: var(--accent);
   --color-accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
   --color-success: #49c99a;
@@ -34,14 +37,45 @@
   --glass-alpha: 0.72;
   --glass-blur: 18px;
   --app-tint: 1;
+
+  /* dark (default) */
+  --bg-rgb: 11 13 18;
+  --surface-rgb: 18 21 29;
+  --elevated-rgb: 25 29 39;
+  --ink-rgb: 255 255 255;
+  --shade-rgb: 0 0 0;
+  --fg: #f4f5f7;
+  --muted: #9ba3b4;
+  /* ≥ 4.5:1 on the dark surfaces for small text. */
+  --faint: #7d8599;
+  --shadow: 0 0 0;
+  --chart-grid: rgb(255 255 255 / 0.05);
+  --chart-axis: rgb(255 255 255 / 0.08);
   color-scheme: dark;
 }
 
-/* Dark tint over the native backdrop: lower = more see-through. */
+/* Light theme: same layout and glass, inverted surfaces. Contrast for
+   muted/faint text is ≥ 4.5:1 on the light surfaces. */
+:root[data-theme="light"] {
+  --bg-rgb: 238 239 245;
+  --surface-rgb: 250 250 253;
+  --elevated-rgb: 255 255 255;
+  --ink-rgb: 20 22 32;
+  --shade-rgb: 255 255 255;
+  --fg: #171923;
+  --muted: #4d5568;
+  --faint: #5f6678;
+  --shadow: 30 32 60;
+  --chart-grid: rgb(20 22 32 / 0.07);
+  --chart-axis: rgb(20 22 32 / 0.14);
+  color-scheme: light;
+}
+
+/* Tint over the native backdrop: lower = more see-through. */
 .app-tint {
   position: fixed;
   inset: 0;
-  background: rgb(11 13 18 / var(--app-tint));
+  background: rgb(var(--bg-rgb) / var(--app-tint));
   transition: background-color 200ms;
 }
 
@@ -80,7 +114,7 @@ textarea,
 /* Scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgb(255 255 255 / 0.12) transparent;
+  scrollbar-color: rgb(var(--ink-rgb) / 0.14) transparent;
 }
 
 /* In the base layer so component utilities (outline-none, rings) can override it.
@@ -94,21 +128,29 @@ textarea,
 
 /* ---------- glass ---------- */
 @utility glass {
-  background: rgb(18 21 29 / var(--glass-alpha));
+  background: rgb(var(--surface-rgb) / var(--glass-alpha));
   backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   border: 1px solid var(--color-line);
   box-shadow:
     0 1px 0 0 rgb(255 255 255 / 0.04) inset,
-    0 12px 40px -12px rgb(0 0 0 / 0.55);
+    0 12px 40px -12px rgb(var(--shadow) / 0.35);
 }
 
 @utility glass-elevated {
-  background: rgb(25 29 39 / calc(var(--glass-alpha) + 0.12));
+  background: rgb(var(--elevated-rgb) / calc(var(--glass-alpha) + 0.12));
   backdrop-filter: blur(calc(var(--glass-blur) + 6px)) saturate(150%);
   border: 1px solid var(--color-line-strong);
   box-shadow:
     0 1px 0 0 rgb(255 255 255 / 0.06) inset,
-    0 24px 64px -16px rgb(0 0 0 / 0.7);
+    0 24px 64px -16px rgb(var(--shadow) / 0.45);
+}
+
+/* Light theme: softer orbs so they tint rather than darken. */
+:root[data-theme="light"] .ambient .orb {
+  opacity: 0.18;
+}
+:root[data-theme="light"] .ambient .grain {
+  background-image: radial-gradient(rgb(20 22 32 / 0.03) 1px, transparent 1px);
 }
 
 /* ---------- ambient background ---------- */

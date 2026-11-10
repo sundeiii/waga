@@ -8,7 +8,7 @@ export function Meter({ percent, className, label }: { percent: number | null; c
   const tone = percent == null ? "" : percent >= 90 ? "bg-danger" : percent >= 75 ? "bg-warning" : "bg-accent";
   return (
     <div
-      className={cn("h-1.5 overflow-hidden rounded-full bg-white/[0.06]", className)}
+      className={cn("h-1.5 overflow-hidden rounded-full bg-ink/[0.06]", className)}
       role="meter"
       aria-label={label}
       aria-valuemin={0}

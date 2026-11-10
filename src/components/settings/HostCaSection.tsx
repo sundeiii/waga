@@ -89,7 +89,7 @@ export function HostCaSection() {
       ))}
 
       {adding && (
-        <div className="mt-2 space-y-2 rounded-xl border border-line bg-black/15 p-3">
+        <div className="mt-2 space-y-2 rounded-xl border border-line bg-shade/15 p-3">
           <Input value={pattern} onChange={(e) => setPattern(e.target.value)} placeholder="Host pattern, e.g. *.corp.example.com" className="font-mono" aria-label="Host pattern" />
           <Textarea
             value={key}

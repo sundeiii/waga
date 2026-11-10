@@ -28,7 +28,10 @@ Tauri 2 (Rust) + React. Dark glassmorphism, lavender accents, real SSH.
 | SFTP **folder transfers** (recursive, symlinks skipped, bounded), 32 requests in flight | ✅ |
 | **System tray** (click to show/hide; Open / New local terminal / Quit), optional close-to-tray, start with Windows (optionally minimized), notifications for dropped sessions and finished transfers, single instance | ✅ |
 | Settings export to a JSON file (preferences only) and in-app "delete all data" | ✅ |
-| Host certificates (CA trust), port forwarding UI, light theme | ⏳ not yet |
+| Local **port forwarding** (ssh -L): saved per server, auto-start, 127.0.0.1-only listeners, live stats | ✅ |
+| **Host certificates**: trusted CAs with host patterns; strict checks (host type, principal, validity, signature) | ✅ |
+| **Light theme** (dark / light / follow Windows), incl. title bar, Mica variant and auto terminal scheme | ✅ |
+| Remote / dynamic (SOCKS) forwarding | ⏳ not yet |
 
 ## Architecture
 

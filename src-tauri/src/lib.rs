@@ -33,9 +33,9 @@ pub fn run() {
             std::fs::create_dir_all(&dir)?;
             let db = Database::open(&dir.join("yoru.db"))?;
             // Apply the saved window backdrop before the window is shown.
-            let material = db.with(database::settings::load).map(|s| s.appearance.window_material).unwrap_or_else(|_| "acrylic".into());
+            let ap = db.with(database::settings::load).map(|s| s.appearance).unwrap_or_default();
             if let Some(w) = app.get_webview_window("main") {
-                if let Err(e) = commands::window::apply_material(&w, &material) {
+                if let Err(e) = commands::window::apply_appearance(&w, &ap.window_material, &ap.theme) {
                     log::warn!("{e}");
                 }
             }
@@ -78,7 +78,7 @@ pub fn run() {
             commands::ssh::ssh_provide_secret,
             commands::ssh::ssh_provide_answers,
             commands::ssh::ssh_active_count,
-            commands::window::set_window_material,
+            commands::window::set_window_appearance,
             commands::forwards::list_saved_forwards,
             commands::forwards::save_forward,
             commands::forwards::delete_saved_forward,

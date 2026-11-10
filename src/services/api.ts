@@ -40,7 +40,8 @@ export const api = {
   autostartEnabled: () => invoke<boolean>("autostart_enabled"),
   /** Native notification (backend honours the user's setting). */
   notify: (title: string, body: string) => invoke<void>("notify", { title, body }).catch(() => undefined),
-  setWindowMaterial:(material: AppSettings["appearance"]["windowMaterial"]) => invoke<void>("set_window_material", { material }),
+  setWindowAppearance: (material: AppSettings["appearance"]["windowMaterial"], theme: AppSettings["appearance"]["theme"]) =>
+    invoke<void>("set_window_appearance", { material, theme }),
 
   // servers
   listServers: () => invoke<ServerView[]>("list_servers"),

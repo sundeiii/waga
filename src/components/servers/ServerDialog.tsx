@@ -248,7 +248,7 @@ export function ServerDialog() {
         )}
 
         {form.authMethod === "agent" && (
-          <p className="col-span-6 -mt-1 rounded-xl border border-line bg-black/20 px-3 py-2.5 text-[12.5px] leading-relaxed text-muted">
+          <p className="col-span-6 -mt-1 rounded-xl border border-line bg-shade/20 px-3 py-2.5 text-[12.5px] leading-relaxed text-muted">
             Uses keys from the Windows <span className="text-fg">OpenSSH Authentication Agent</span> service, or Pageant if it's running. Add keys with <code className="font-mono text-fg">ssh-add</code>.
           </p>
         )}
@@ -284,14 +284,14 @@ export function ServerDialog() {
         </Field>
 
         <div className="col-span-6 grid grid-cols-2 gap-3">
-          <label className="flex items-center justify-between rounded-xl border border-line bg-black/15 px-3 py-2.5 text-[13px]">
+          <label className="flex items-center justify-between rounded-xl border border-line bg-shade/15 px-3 py-2.5 text-[13px]">
             <span>
               Keepalive
               <span className="block text-[11.5px] text-faint">Detect dead connections</span>
             </span>
             <Switch checked={form.keepalive} onCheckedChange={(v) => set("keepalive", v)} label="Keepalive" />
           </label>
-          <label className="flex items-center justify-between rounded-xl border border-line bg-black/15 px-3 py-2.5 text-[13px]">
+          <label className="flex items-center justify-between rounded-xl border border-line bg-shade/15 px-3 py-2.5 text-[13px]">
             <span>
               Auto-reconnect
               <span className="block text-[11.5px] text-faint">After an unexpected drop</span>

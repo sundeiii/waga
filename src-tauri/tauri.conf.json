@@ -22,7 +22,6 @@
         "center": true,
         "resizable": true,
         "visible": false,
-        "theme": "Dark",
         "transparent": true,
         "dragDropEnabled": false
       }

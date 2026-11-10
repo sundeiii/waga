@@ -23,7 +23,7 @@ export function Switch({
       disabled={disabled}
       className={cn(
         "relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full border border-line transition-colors duration-200",
-        "data-[state=checked]:border-transparent data-[state=checked]:bg-accent data-[state=unchecked]:bg-white/10 disabled:opacity-40",
+        "data-[state=checked]:border-transparent data-[state=checked]:bg-accent data-[state=unchecked]:bg-ink/10 disabled:opacity-40",
       )}
     >
       <RS.Thumb className="block size-[16px] translate-x-[3px] rounded-full bg-white shadow-md transition-transform duration-200 ease-[var(--ease-out-soft)] data-[state=checked]:translate-x-[18px]" />

@@ -10,6 +10,8 @@ const KEY: &str = "app";
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", default)]
 pub struct AppearanceSettings {
+    /// "dark" | "light" | "system"
+    pub theme: String,
     pub accent: String,
     /// Windows backdrop behind the (translucent) window: "acrylic" | "mica" | "none".
     pub window_material: String,
@@ -25,6 +27,7 @@ pub struct AppearanceSettings {
 impl Default for AppearanceSettings {
     fn default() -> Self {
         Self {
+            theme: "dark".into(),
             accent: "#A99CF6".into(),
             window_material: "acrylic".into(),
             window_tint: 0.55,
@@ -59,7 +62,8 @@ impl Default for TerminalSettings {
             font_size: 14,
             cursor_style: "bar".into(),
             cursor_blink: true,
-            theme: "yoru".into(),
+            // "auto" follows the app theme (yoru in dark, paper in light).
+            theme: "auto".into(),
             opacity: 0.85,
             scrollback: 5000,
             copy_on_select: false,
@@ -136,6 +140,9 @@ impl AppSettings {
         }
         if a.blur > 40 {
             return bad("Blur must be between 0 and 40 px");
+        }
+        if !["dark", "light", "system"].contains(&a.theme.as_str()) {
+            return bad("Unknown theme");
         }
         if !["acrylic", "mica", "none"].contains(&a.window_material.as_str()) {
             return bad("Unknown window material");

@@ -150,7 +150,7 @@ export function ForwardsDialog() {
           </div>
         )}
 
-        <div className="rounded-xl border border-line bg-black/15 p-3">
+        <div className="rounded-xl border border-line bg-shade/15 p-3">
           <div className="mb-2 text-[12px] font-medium text-muted">Add forward</div>
           <div className="grid grid-cols-[110px_auto_1fr_100px] items-center gap-2">
             <Input aria-label="Local port" placeholder="local port" value={form.localPort} inputMode="numeric" onChange={(e) => setForm({ ...form, localPort: e.target.value.replace(/\D/g, "") })} className="font-mono" />

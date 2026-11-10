@@ -123,7 +123,9 @@ export function withAlpha(color: string | undefined, alpha: number): string | un
 
 /** Yoru settings, overridden per local tab by its Windows Terminal profile. */
 function termOptions(s: AppSettings, target?: Target) {
-  let theme: ITheme = THEMES[s.terminal.theme] ?? THEMES.yoru;
+  // "auto" follows the app theme.
+  const named = s.terminal.theme === "auto" ? (document.documentElement.dataset.theme === "light" ? "paper" : "yoru") : s.terminal.theme;
+  let theme: ITheme = THEMES[named] ?? THEMES.yoru;
   let fontFamily = `"${s.terminal.fontFamily}", ${FALLBACK_FONTS}`;
   let opacity = s.terminal.opacity;
   if (target?.kind === "local") {
@@ -538,7 +540,12 @@ export const terminalEngine = {
   },
 };
 
-// Keep open terminals in sync with settings changes.
+// Keep open terminals in sync with settings changes and the app theme
+// (for the "auto" color scheme).
 useSettings.subscribe((st, prev) => {
   if (st.settings && st.settings.terminal !== prev.settings?.terminal) terminalEngine.applySettings(st.settings);
+});
+window.addEventListener("yoru-theme-change", () => {
+  const s = useSettings.getState().settings;
+  if (s) terminalEngine.applySettings(s);
 });

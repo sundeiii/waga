@@ -125,7 +125,7 @@ export function FilePane({
         {crumbs.map((c, i) => (
           <span key={c.path + i} className="flex shrink-0 items-center">
             {i > 0 && <ChevronRight className="size-3.5 text-faint" />}
-            <button onClick={() => onNavigate(c.path)} className={cn("rounded-md px-1.5 py-0.5 font-mono hover:bg-white/[0.06]", i === crumbs.length - 1 ? "text-fg" : "text-muted")}>
+            <button onClick={() => onNavigate(c.path)} className={cn("rounded-md px-1.5 py-0.5 font-mono hover:bg-ink/[0.06]", i === crumbs.length - 1 ? "text-fg" : "text-muted")}>
               {displayName(c.label)}
             </button>
           </span>
@@ -156,7 +156,7 @@ export function FilePane({
           <p className="p-4 text-[12.5px] text-faint">{listing ? "This folder is empty" : ""}</p>
         ) : (
           <table className="w-full table-fixed text-[12.5px]">
-            <thead className="sticky top-0 z-[1] bg-[#12151d]/95 text-left text-[10.5px] uppercase tracking-wider text-faint backdrop-blur">
+            <thead className="sticky top-0 z-[1] bg-surface/95 text-left text-[10.5px] uppercase tracking-wider text-faint backdrop-blur">
               <tr>
                 <th className="px-3 py-1.5 font-medium">Name</th>
                 <th className="w-24 px-2 py-1.5 text-right font-medium">Size</th>
@@ -175,7 +175,7 @@ export function FilePane({
                     onClick={(ev) => click(ev, i, e)}
                     onDoubleClick={() => e.isDir && onNavigate(e.path)}
                     aria-selected={sel}
-                    className={cn("cursor-default select-none", sel ? "bg-accent-soft text-fg" : "hover:bg-white/[0.035]", e.hidden && !sel && "text-muted")}
+                    className={cn("cursor-default select-none", sel ? "bg-accent-soft text-fg" : "hover:bg-ink/[0.035]", e.hidden && !sel && "text-muted")}
                     title={e.permissions ? `${e.permissions}` : undefined}
                   >
                     <td className="truncate px-3 py-1.5">

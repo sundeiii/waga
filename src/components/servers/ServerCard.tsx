@@ -81,7 +81,7 @@ export function useServerActions(server: ServerView) {
 }
 
 const menuItem =
-  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-fg data-[disabled]:opacity-40 [&_svg]:size-4";
+  "flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-ink/[0.06] data-[highlighted]:text-fg data-[disabled]:opacity-40 [&_svg]:size-4";
 
 export function ServerMenu({ server }: { server: ServerView }) {
   const a = useServerActions(server);
@@ -177,7 +177,7 @@ export function ServerCard({ server, index = 0 }: { server: ServerView; index?: 
       )}
     >
       <div className="flex items-start gap-3">
-        <div className={cn("grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-black/25 font-mono text-[13px] font-semibold", live ? "text-success" : "text-accent")}>
+        <div className={cn("grid size-10 shrink-0 place-items-center rounded-xl border border-line bg-shade/25 font-mono text-[13px] font-semibold", live ? "text-success" : "text-accent")}>
           {server.name.slice(0, 2).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">

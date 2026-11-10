@@ -51,13 +51,13 @@ export function Sidebar() {
         className={cn(
           "group relative flex h-9 w-full items-center rounded-xl text-[13.5px] font-medium transition-colors duration-150",
           collapsed ? "justify-center px-0" : "gap-3 px-2.5",
-          active ? "text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg",
+          active ? "text-fg" : "text-muted hover:bg-ink/[0.04] hover:text-fg",
         )}
       >
         {active && (
           <motion.span
             layoutId="nav-active"
-            className="absolute inset-0 rounded-xl border border-line bg-white/[0.07] shadow-[0_0_0_1px_rgb(255_255_255/0.02)_inset]"
+            className="absolute inset-0 rounded-xl border border-line bg-ink/[0.07] shadow-[0_0_0_1px_rgb(255_255_255/0.02)_inset]"
             transition={{ type: "spring", stiffness: 500, damping: 40 }}
           />
         )}
@@ -94,7 +94,7 @@ export function Sidebar() {
 
       <div className="flex flex-col gap-1 border-t border-line px-2 py-2">
         {!collapsed ? (
-          <div className="mb-1 rounded-xl bg-black/20 px-3 py-2.5 text-[12px]">
+          <div className="mb-1 rounded-xl bg-shade/20 px-3 py-2.5 text-[12px]">
             <div className="flex items-center gap-2">
               <span className={cn("size-1.5 rounded-full", connected ? "bg-success shadow-[0_0_6px_var(--color-success)]" : "bg-faint")} />
               <span className="text-muted">
@@ -108,7 +108,7 @@ export function Sidebar() {
         {item("settings", "Settings", Settings)}
         <button
           onClick={toggle}
-          className="flex h-8 items-center justify-center gap-2 rounded-xl text-faint transition-colors hover:bg-white/[0.04] hover:text-fg"
+          className="flex h-8 items-center justify-center gap-2 rounded-xl text-faint transition-colors hover:bg-ink/[0.04] hover:text-fg"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
         >

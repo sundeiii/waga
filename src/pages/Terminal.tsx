@@ -31,7 +31,7 @@ function NewTabMenu() {
             <DM.Item
               key={p.id}
               onSelect={() => void terminalEngine.openLocal(p)}
-              className="flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 outline-none data-[highlighted]:bg-white/[0.06]"
+              className="flex cursor-default items-center gap-2.5 rounded-lg px-2.5 py-1.5 outline-none data-[highlighted]:bg-ink/[0.06]"
             >
               <Monitor className="size-4 shrink-0 text-faint" />
               <span className="min-w-0 flex-1">
@@ -49,7 +49,7 @@ function NewTabMenu() {
             <DM.Item
               key={s.id}
               onSelect={() => void terminalEngine.openTab(s)}
-              className="flex cursor-default flex-col rounded-lg px-2.5 py-1.5 outline-none data-[highlighted]:bg-white/[0.06]"
+              className="flex cursor-default flex-col rounded-lg px-2.5 py-1.5 outline-none data-[highlighted]:bg-ink/[0.06]"
             >
               <span className="text-[13px]">{s.name}</span>
               <span className="font-mono text-[11px] text-faint">
@@ -58,7 +58,7 @@ function NewTabMenu() {
             </DM.Item>
           ))}
           {servers.length > 0 && <DM.Separator className="my-1 h-px bg-line" />}
-          <DM.Item onSelect={() => openServerDialog({ connectAfterSave: true })} className="flex cursor-default items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-fg">
+          <DM.Item onSelect={() => openServerDialog({ connectAfterSave: true })} className="flex cursor-default items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] text-muted outline-none data-[highlighted]:bg-ink/[0.06] data-[highlighted]:text-fg">
             <Plus className="size-4" /> New server…
           </DM.Item>
         </DM.Content>

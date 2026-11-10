@@ -6,7 +6,7 @@ import { formatBytes } from "@/stores/monitoring";
 /** Validated (dark surface #12151D): lightness band, chroma, CVD ΔE 13.6, contrast ≥ 3:1. */
 export const SERIES = ["#8A7AE8", "#2FA69E"] as const;
 
-const AXIS = { stroke: "rgb(255 255 255 / 0.08)", tick: { fill: "#6b7285", fontSize: 11 }, tickLine: false } as const;
+const AXIS = { stroke: "var(--chart-axis)", tick: { fill: "var(--faint)", fontSize: 11 }, tickLine: false } as const;
 
 export const timeLabel = (iso: string) => new Date(iso).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
@@ -57,18 +57,18 @@ export function PercentChart({ data, name }: { data: { ts: string; v: number | n
             <stop offset="1" stopColor={SERIES[0]} stopOpacity={0} />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.05)" />
+        <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
         <XAxis dataKey="ts" tickFormatter={timeLabel} minTickGap={48} {...AXIS} />
         <YAxis domain={[0, 100]} ticks={[0, 50, 100]} unit="%" {...AXIS} />
         <Tooltip
-          cursor={{ stroke: "rgb(255 255 255 / 0.25)" }}
+          cursor={{ stroke: "var(--chart-axis)", strokeWidth: 1.5 }}
           content={({ active, payload, label }) =>
             active && payload?.length ? (
               <TooltipBox label={timeLabel(String(label))} rows={[{ name, color: SERIES[0], value: payload[0].value == null ? "n/a" : `${Number(payload[0].value).toFixed(1)} %` }]} />
             ) : null
           }
         />
-        <Area type="monotone" dataKey="v" name={name} stroke={SERIES[0]} strokeWidth={2} fill={`url(#${id})`} connectNulls={false} isAnimationActive={false} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "#12151D" }} />
+        <Area type="monotone" dataKey="v" name={name} stroke={SERIES[0]} strokeWidth={2} fill={`url(#${id})`} connectNulls={false} isAnimationActive={false} dot={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }} />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -79,11 +79,11 @@ export function NetworkChart({ data }: { data: { ts: string; rx: number | null; 
   return (
     <ResponsiveContainer width="100%" height="100%">
       <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 6 }}>
-        <CartesianGrid vertical={false} stroke="rgb(255 255 255 / 0.05)" />
+        <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
         <XAxis dataKey="ts" tickFormatter={timeLabel} minTickGap={48} {...AXIS} />
         <YAxis tickFormatter={(v) => formatBytes(v, 0)} width={56} {...AXIS} />
         <Tooltip
-          cursor={{ stroke: "rgb(255 255 255 / 0.25)" }}
+          cursor={{ stroke: "var(--chart-axis)", strokeWidth: 1.5 }}
           content={({ active, payload, label }) =>
             active && payload?.length ? (
               <TooltipBox
@@ -93,8 +93,8 @@ export function NetworkChart({ data }: { data: { ts: string; rx: number | null; 
             ) : null
           }
         />
-        <Line type="monotone" dataKey="rx" name="Download" stroke={SERIES[0]} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "#12151D" }} />
-        <Line type="monotone" dataKey="tx" name="Upload" stroke={SERIES[1]} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "#12151D" }} />
+        <Line type="monotone" dataKey="rx" name="Download" stroke={SERIES[0]} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }} />
+        <Line type="monotone" dataKey="tx" name="Upload" stroke={SERIES[1]} strokeWidth={2} dot={false} isAnimationActive={false} connectNulls={false} activeDot={{ r: 4, strokeWidth: 2, stroke: "var(--color-surface)" }} />
       </LineChart>
     </ResponsiveContainer>
   );

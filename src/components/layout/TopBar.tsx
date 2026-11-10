@@ -52,7 +52,7 @@ export function TopBar() {
           placeholder="Search servers, hosts, tags…"
           aria-label="Search servers"
           spellCheck={false}
-          className="h-9 w-full rounded-xl border border-line bg-black/25 pl-9 pr-14 text-[13px] text-fg placeholder:text-faint transition-colors hover:border-line-strong outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
+          className="h-9 w-full rounded-xl border border-line bg-shade/25 pl-9 pr-14 text-[13px] text-fg placeholder:text-faint transition-colors hover:border-line-strong outline-none focus:border-accent/60 focus:shadow-[0_0_0_3px_color-mix(in_oklab,var(--accent)_16%,transparent)]"
         />
         <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2">
           <Kbd>Ctrl K</Kbd>
@@ -62,7 +62,7 @@ export function TopBar() {
       <div className="flex items-center gap-2">
         <button
           onClick={() => setPage("terminal")}
-          className="flex h-9 items-center gap-2 rounded-xl border border-line bg-white/[0.03] px-3 text-[12.5px] text-muted transition-colors hover:text-fg"
+          className="flex h-9 items-center gap-2 rounded-xl border border-line bg-ink/[0.03] px-3 text-[12.5px] text-muted transition-colors hover:text-fg"
           title="Active SSH sessions"
         >
           <span className={connected ? "size-1.5 rounded-full bg-success shadow-[0_0_6px_var(--color-success)]" : "size-1.5 rounded-full bg-faint"} />
@@ -104,7 +104,7 @@ export function TopBar() {
               <DM.Separator className="my-1 h-px bg-line" />
               <DM.Item
                 onSelect={() => setPage("settings")}
-                className="flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-muted outline-none data-[highlighted]:bg-white/[0.06] data-[highlighted]:text-fg"
+                className="flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-muted outline-none data-[highlighted]:bg-ink/[0.06] data-[highlighted]:text-fg"
               >
                 <Settings2 className="size-4" /> All settings
               </DM.Item>
