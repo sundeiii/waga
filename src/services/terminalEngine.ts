@@ -13,6 +13,7 @@ import { useSettings } from "@/stores/settings";
 import { useServers } from "@/stores/servers";
 import { useUi } from "@/stores/ui";
 import { useMonitoring } from "@/stores/monitoring";
+import { autoStartForwards } from "@/stores/forwards";
 import type { AppSettings, LocalProfile, ServerView, SessionEvent } from "@/types";
 
 export const THEMES: Record<string, ITheme> = {
@@ -367,6 +368,7 @@ export const terminalEngine = {
             void useServers.getState().refresh();
             // Monitoring piggybacks on this authenticated connection (no extra login).
             if (useSettings.getState().settings?.monitoring.enabled) useMonitoring.getState().autoStart(e.target.server.id);
+            void autoStartForwards(e.target.server.id);
           }
           // Sync size in case the pane changed while connecting.
           api.sshResize(sid, e.term.cols, e.term.rows).catch(() => undefined);

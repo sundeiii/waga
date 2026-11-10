@@ -160,6 +160,35 @@ export interface Snippet extends SnippetInput {
   updatedAt: string;
 }
 
+export interface ForwardInput {
+  label: string;
+  /** 0 = any free port */
+  localPort: number;
+  remoteHost: string;
+  remotePort: number;
+  autoStart: boolean;
+}
+
+export interface SavedForward extends ForwardInput {
+  id: string;
+  serverId: string;
+  createdAt: string;
+}
+
+export interface ForwardStatus {
+  id: string;
+  savedId: string | null;
+  serverId: string;
+  localPort: number;
+  remoteHost: string;
+  remotePort: number;
+  state: "active" | "stopped";
+  activeConnections: number;
+  totalConnections: number;
+  bytes: number;
+  message: string | null;
+}
+
 export interface FileEntry {
   name: string;
   path: string;

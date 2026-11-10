@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import * as DM from "@radix-ui/react-dropdown-menu";
-import { Copy, FolderTree, Gauge, MoreHorizontal, Pencil, Plug, PlugZap, Star, Trash2, KeyRound } from "lucide-react";
+import { ArrowRightLeft, Copy, FolderTree, Gauge, MoreHorizontal, Pencil, Plug, PlugZap, Star, Trash2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge, StatusDot, STATE_META } from "@/components/ui/misc";
 import { terminalEngine } from "@/services/terminalEngine";
@@ -12,6 +12,7 @@ import { cn, displayEndpoint, relativeTime } from "@/lib/utils";
 import type { ServerView } from "@/types";
 import { PROFILE_KINDS } from "./ServerDialog";
 import { Meter } from "@/components/ui/Meter";
+import { useForwards } from "@/stores/forwards";
 import { diskPercent, formatUptime, memPercent, rootDisk, useMonitoring } from "@/stores/monitoring";
 
 /** Best state across this server's tabs (connected > connecting > failed > idle). */
@@ -107,6 +108,9 @@ export function ServerMenu({ server }: { server: ServerView }) {
           </DM.Item>
           <DM.Item className={menuItem} disabled={state !== "connected"} onSelect={a.monitoring}>
             <Gauge /> View monitoring
+          </DM.Item>
+          <DM.Item className={menuItem} onSelect={() => useForwards.getState().openDialog(server.id)}>
+            <ArrowRightLeft /> Port forwarding…
           </DM.Item>
           <DM.Separator className="my-1 h-px bg-line" />
           <DM.Item className={menuItem} onSelect={a.edit}>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { ArrowDown, ArrowUp, Eraser, Minus, Monitor, Plus, PlugZap, RotateCw, Search, SquareCode, X } from "lucide-react";
+import { ArrowDown, ArrowRightLeft, ArrowUp, Eraser, Minus, Monitor, Plus, PlugZap, RotateCw, Search, SquareCode, X } from "lucide-react";
 import { useSnippets } from "@/stores/snippets";
+import { useForwards } from "@/stores/forwards";
 import { Button } from "@/components/ui/Button";
 import { StatusDot, STATE_META } from "@/components/ui/misc";
 import { terminalEngine } from "@/services/terminalEngine";
@@ -117,6 +118,11 @@ export function TerminalToolbar() {
       ) : (
         <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} title="Find (Ctrl+Shift+F)" aria-label="Find in output">
           <Search />
+        </Button>
+      )}
+      {tab.kind === "ssh" && (
+        <Button variant="ghost" size="icon" onClick={() => useForwards.getState().openDialog(tab.serverId)} title="Port forwarding" aria-label="Port forwarding">
+          <ArrowRightLeft />
         </Button>
       )}
       <Button variant="ghost" size="icon" onClick={() => useSnippets.getState().setPalette(true)} disabled={tab.state !== "connected"} title="Insert snippet (Ctrl+Shift+S)" aria-label="Insert snippet">

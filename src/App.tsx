@@ -14,6 +14,8 @@ import { SnippetEditor } from "@/components/snippets/SnippetEditor";
 import { SnippetPalette } from "@/components/snippets/SnippetPalette";
 import { useSnippets } from "@/stores/snippets";
 import { initTransferEvents } from "@/stores/transfers";
+import { initForwardEvents } from "@/stores/forwards";
+import { ForwardsDialog } from "@/components/servers/ForwardsDialog";
 
 // Heavier pages load on first visit (charts, file manager, settings).
 const MonitoringPage = lazy(() => import("@/pages/Monitoring").then((m) => ({ default: m.MonitoringPage })));
@@ -108,6 +110,7 @@ export default function App() {
     }
     initMonitoringEvents();
     initTransferEvents();
+    initForwardEvents();
     // Tray menu → "New local terminal".
     const unlisten = listen("tray://new-local", () => {
       const p = useLocalProfiles.getState().defaultProfile();
@@ -180,6 +183,7 @@ export default function App() {
       <QuickConnectDialog />
       <PromptDialogs />
       <SnippetEditor />
+      <ForwardsDialog />
       <SnippetPalette />
       <ConfirmDialog />
       <Toaster />

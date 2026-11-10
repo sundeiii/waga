@@ -3,8 +3,11 @@ import type {
   ActivityEntry,
   AppError,
   AppSettings,
+  ForwardInput,
+  ForwardStatus,
   KnownHost,
   Listing,
+  SavedForward,
   LocalProfile,
   SecretUpdate,
   ServerInput,
@@ -55,6 +58,15 @@ export const api = {
   clearActivity: () => invoke<void>("clear_activity"),
   listKnownHosts: () => invoke<KnownHost[]>("list_known_hosts"),
   removeKnownHost: (host: string, port: number) => invoke<number>("remove_known_host", { host, port }),
+
+  // port forwarding
+  listSavedForwards: (serverId: string) => invoke<SavedForward[]>("list_saved_forwards", { serverId }),
+  saveForward: (serverId: string, input: ForwardInput, id?: string) => invoke<SavedForward>("save_forward", { serverId, id: id ?? null, input }),
+  deleteSavedForward: (id: string) => invoke<void>("delete_saved_forward", { id }),
+  startForward: (serverId: string, savedId: string | null, adhoc?: { localPort: number; remoteHost: string; remotePort: number }) =>
+    invoke<ForwardStatus>("start_forward", { serverId, savedId, localPort: adhoc?.localPort ?? null, remoteHost: adhoc?.remoteHost ?? null, remotePort: adhoc?.remotePort ?? null }),
+  stopForward: (id: string) => invoke<boolean>("stop_forward", { id }),
+  listActiveForwards: () => invoke<ForwardStatus[]>("list_active_forwards"),
 
   // snippets
   listSnippets: () => invoke<Snippet[]>("list_snippets"),

@@ -1,6 +1,8 @@
 //! SQLite persistence for non-sensitive data.
 
 pub mod activity;
+pub mod forwards;
+pub mod host_cas;
 pub mod known_hosts;
 pub mod servers;
 pub mod settings;
@@ -18,6 +20,7 @@ use crate::error::{AppError, AppResult};
 const MIGRATIONS: &[(i64, &str)] = &[
     (1, include_str!("../../migrations/0001_init.sql")),
     (2, include_str!("../../migrations/0002_snippets.sql")),
+    (3, include_str!("../../migrations/0003_port_forwards.sql")),
 ];
 
 pub struct Database {
