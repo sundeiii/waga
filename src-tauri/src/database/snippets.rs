@@ -134,7 +134,7 @@ pub fn update(conn: &Connection, id: &str, input: &SnippetInput) -> AppResult<Sn
 }
 
 pub fn set_favorite(conn: &Connection, id: &str, favorite: bool) -> AppResult<()> {
-    conn.execute("UPDATE snippets SET favorite=?2 WHERE id=?1", params![id, favorite])?;
+    conn.execute("UPDATE snippets SET favorite=?2, updated_at=?3 WHERE id=?1", params![id, favorite, now()])?;
     Ok(())
 }
 
@@ -148,6 +148,7 @@ pub fn delete(conn: &Connection, id: &str) -> AppResult<()> {
     if conn.execute("DELETE FROM snippets WHERE id=?1", [id])? == 0 {
         return Err(AppError::NotFound("snippet".into()));
     }
+    super::tombstone(conn, "snippet", id)?;
     Ok(())
 }
 

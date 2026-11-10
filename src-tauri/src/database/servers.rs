@@ -267,6 +267,7 @@ pub fn delete(conn: &Connection, id: &str) -> AppResult<()> {
     if n == 0 {
         return Err(AppError::NotFound(format!("server {id}")));
     }
+    super::tombstone(conn, "server", id)?;
     Ok(())
 }
 

@@ -71,7 +71,7 @@ pub fn insert(conn: &Connection, server_id: &str, input: &ForwardInput) -> AppRe
     let i = validate(input)?;
     let id = uuid::Uuid::new_v4().to_string();
     conn.execute(
-        "INSERT INTO port_forwards (id, server_id, label, local_port, remote_host, remote_port, auto_start, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO port_forwards (id, server_id, label, local_port, remote_host, remote_port, auto_start, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)",
         params![id, server_id, i.label, i.local_port, i.remote_host, i.remote_port, i.auto_start, now()],
     )?;
     get(conn, &id)
@@ -80,14 +80,16 @@ pub fn insert(conn: &Connection, server_id: &str, input: &ForwardInput) -> AppRe
 pub fn update(conn: &Connection, id: &str, input: &ForwardInput) -> AppResult<SavedForward> {
     let i = validate(input)?;
     conn.execute(
-        "UPDATE port_forwards SET label=?2, local_port=?3, remote_host=?4, remote_port=?5, auto_start=?6 WHERE id=?1",
-        params![id, i.label, i.local_port, i.remote_host, i.remote_port, i.auto_start],
+        "UPDATE port_forwards SET label=?2, local_port=?3, remote_host=?4, remote_port=?5, auto_start=?6, updated_at=?7 WHERE id=?1",
+        params![id, i.label, i.local_port, i.remote_host, i.remote_port, i.auto_start, now()],
     )?;
     get(conn, id)
 }
 
 pub fn delete(conn: &Connection, id: &str) -> AppResult<()> {
-    conn.execute("DELETE FROM port_forwards WHERE id = ?1", [id])?;
+    if conn.execute("DELETE FROM port_forwards WHERE id = ?1", [id])? > 0 {
+        super::tombstone(conn, "forward", id)?;
+    }
     Ok(())
 }
 

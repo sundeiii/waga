@@ -86,10 +86,14 @@ pub fn list_all(conn: &Connection) -> AppResult<Vec<KnownHost>> {
 }
 
 pub fn remove(conn: &Connection, host: &str, port: u16) -> AppResult<usize> {
-    Ok(conn.execute(
+    let n = conn.execute(
         "DELETE FROM known_hosts WHERE host = ?1 AND port = ?2",
         params![normalize_host(host), port],
-    )?)
+    )?;
+    if n > 0 {
+        super::tombstone(conn, "known_host", &format!("{}:{port}", normalize_host(host)))?;
+    }
+    Ok(n)
 }
 
 #[cfg(test)]

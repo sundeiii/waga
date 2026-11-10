@@ -59,7 +59,9 @@ pub fn insert(conn: &Connection, pattern: &str, public_key: &str, fingerprint: &
 }
 
 pub fn delete(conn: &Connection, id: &str) -> AppResult<()> {
-    conn.execute("DELETE FROM host_cas WHERE id = ?1", [id])?;
+    if conn.execute("DELETE FROM host_cas WHERE id = ?1", [id])? > 0 {
+        super::tombstone(conn, "host_ca", id)?;
+    }
     Ok(())
 }
 

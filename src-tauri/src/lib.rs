@@ -11,6 +11,7 @@ pub mod security;
 pub mod sftp;
 pub mod ssh;
 pub mod state;
+pub mod sync;
 pub mod updates;
 
 use std::sync::Arc;

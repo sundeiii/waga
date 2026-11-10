@@ -21,7 +21,18 @@ const MIGRATIONS: &[(i64, &str)] = &[
     (1, include_str!("../../migrations/0001_init.sql")),
     (2, include_str!("../../migrations/0002_snippets.sql")),
     (3, include_str!("../../migrations/0003_port_forwards.sql")),
+    (4, include_str!("../../migrations/0004_sync.sql")),
 ];
+
+/// Remember a deletion so sync can propagate it to other PCs.
+pub fn tombstone(conn: &Connection, kind: &str, id: &str) -> AppResult<()> {
+    conn.execute(
+        "INSERT INTO sync_tombstones (kind, id, deleted_at) VALUES (?1, ?2, ?3)
+         ON CONFLICT(kind, id) DO UPDATE SET deleted_at = excluded.deleted_at",
+        rusqlite::params![kind, id, now()],
+    )?;
+    Ok(())
+}
 
 pub struct Database {
     conn: Mutex<Connection>,
